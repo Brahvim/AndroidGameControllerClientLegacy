@@ -1,0 +1,16 @@
+<resources>
+
+    <string name="app_name" translatable="false">AndroidGameController</string>
+
+    <string name="loadScene_looking_for_servers">
+        Looking for AndroidGameController servers\n
+        on your network!
+    </string>
+
+    <string name="loadScene_no_wifi" formatted="true">
+        Huh, no network(s)..?\n
+        Please connect to the WiFi network\n
+        your computer is connected to!
+    </string>
+
+</resources>
