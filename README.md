@@ -1,4 +1,4 @@
-# The *AndroidGameController* Client App!
+# The *AndroidGameController* Android "Client" App!
 
 This is the Android app to be used with the [AndroidGameController](https://github.com/Brahvim/AndroidGameController) desktop software!
 
