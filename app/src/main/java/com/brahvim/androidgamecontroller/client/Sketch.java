@@ -93,7 +93,7 @@ public class Sketch extends PApplet {
   public void unprojectTouches() {
     Unprojector.captureViewMatrix((PGraphics3D)g);
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < touches.length; i++) {
       TouchEvent.Pointer p = touches[i];
       Unprojector.gluUnProject(p.x, height - p.y, 0, Sketch.unprojectedTouches[i]);
     }
