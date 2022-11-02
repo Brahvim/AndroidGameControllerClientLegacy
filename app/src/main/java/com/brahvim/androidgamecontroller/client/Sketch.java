@@ -14,7 +14,7 @@ import processing.event.TouchEvent;
 import processing.opengl.PGraphics3D;
 
 public class Sketch extends PApplet {
-  // region Fields.
+  // region Fields! ":D!~
   private static final int SERVER_PORT = RequestCode.SERVER_PORT;
   public PFont DEFAULT_FONT;
   public float cx, cy, qx, qy, q3x, q3y;
@@ -29,7 +29,6 @@ public class Sketch extends PApplet {
   public static final PVector[] unprojectedTouches = new PVector[10];
   public float frameStartTime, pframeTime, frameTime;
   // endregion
-
   // endregion
 
   @Override
@@ -39,7 +38,7 @@ public class Sketch extends PApplet {
 
   @Override
   public void setup() {
-    //orientation(LANDSCAPE);
+    //orientation(LANDSCAPE); // Forced it in the manifest, bois. It's *faster* now!
     updateRatios();
 
     socket = new AgcClientSocket();
@@ -95,7 +94,9 @@ public class Sketch extends PApplet {
 
     for (int i = 0; i < touches.length; i++) {
       TouchEvent.Pointer p = touches[i];
-      Unprojector.gluUnProject(p.x, height - p.y, 0, Sketch.unprojectedTouches[i]);
+      PVector u = Sketch.unprojectedTouches[i];
+      if (!(p == null || u == null))
+        Unprojector.gluUnProject(p.x, height - p.y, 0, u);
     }
   }
 

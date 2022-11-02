@@ -38,4 +38,5 @@ public class ClientScene extends Scene {
 
   public void onResume() {
   }
+
 }
