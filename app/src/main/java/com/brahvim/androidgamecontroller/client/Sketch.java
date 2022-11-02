@@ -8,7 +8,10 @@ import java.util.ArrayList;
 
 import processing.core.PApplet;
 import processing.core.PFont;
+import processing.core.PVector;
 import processing.event.MouseEvent;
+import processing.event.TouchEvent;
+import processing.opengl.PGraphics3D;
 
 public class Sketch extends PApplet {
   // region Fields.
@@ -23,7 +26,8 @@ public class Sketch extends PApplet {
   // endregion
 
   // region Boilerplate-y stuff.
-  float frameStartTime, pframeTime, frameTime;
+  public static final PVector[] unprojectedTouches = new PVector[10];
+  public float frameStartTime, pframeTime, frameTime;
   // endregion
 
   // endregion
@@ -79,9 +83,20 @@ public class Sketch extends PApplet {
     frameTime = frameStartTime - pframeTime;
     pframeTime = frameStartTime;
 
+    unprojectTouches();
+
     if (ClientScene.currentScene != null)
       ClientScene.currentScene.draw();
     else println("Current scene is `null`!");
+  }
+
+  public void unprojectTouches() {
+    Unprojector.captureViewMatrix((PGraphics3D)g);
+
+    for (int i = 0; i < 10; i++) {
+      TouchEvent.Pointer p = touches[i];
+      Unprojector.gluUnProject(p.x, height - p.y, 0, Sketch.unprojectedTouches[i]);
+    }
   }
 
   public ArrayList<String> getNetworks() {

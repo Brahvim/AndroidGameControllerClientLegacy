@@ -2,7 +2,6 @@ package com.brahvim.androidgamecontroller.client;
 
 import android.os.Build;
 import android.os.Process;
-import android.provider.Settings;
 
 import com.brahvim.androidgamecontroller.RequestCode;
 
@@ -14,53 +13,6 @@ public class SketchWithScenes extends Sketch {
   }
 
   ClientScene loadScene = new ClientScene() {
-    String deviceNames;
-
-    @Override
-    //@RequiresApi(api = Build.VERSION_CODES.N_MR1)
-    // ^^^ Better put this annotation for a function
-    // that RETURNS the strings, concatenated.
-    public void setup() {
-      // Waah! No spam! Slow down!:
-      frameRate(4);
-
-      deviceNames = Build.MODEL;
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-        String btName =
-          Settings.Secure.getString(MainActivity.appAct.getContentResolver(),
-            Settings.Global.DEVICE_NAME);
-
-        if (btName != null) {
-          deviceNames = deviceNames.concat(Character.toString('\n'));
-          deviceNames = deviceNames.concat(btName);
-        }
-      }
-    }
-
-    @Override
-    public void draw() {
-      background(0);
-
-      ArrayList<String> possibleServers = getNetworks();
-      boolean noServers = possibleServers == null;
-
-      // Send an `ADD_ME` request to all servers!:
-      if (!(noServers || SketchWithScenes.super.inSession)) {
-        for (String s : possibleServers)
-          socket.sendCode(RequestCode.ADD_ME,
-            // Send the device's names (the manufacturer-assigned name, along with the
-            // user-assigned bluetooth name):
-            "CPH2083\nBrahvim's Oppo A12",
-            // Finally, our IP and port number!:
-            s, RequestCode.SERVER_PORT);
-      }
-
-      // Give a prompt accordingly:
-      text(MainActivity.appAct.getString(
-        noServers? R.string.loadScene_no_wifi
-          : R.string.loadScene_looking_for_servers), cx, cy);
-    }
-
     @Override
     public void onReceive(byte[] p_data, String p_ip, int p_port) {
       System.out.printf(
@@ -84,12 +36,59 @@ public class SketchWithScenes extends Sketch {
     } // End of `onReceive()`.
 
     @Override
+    //@RequiresApi(api = Build.VERSION_CODES.N_MR1)
+    // ^^^ Better put this annotation for a function
+    // that RETURNS the strings, concatenated.
+    public void setup() {
+      // Waah! No spam! Slow down!:
+      frameRate(4);
+
+      // #region Used to get the bluetooth name.
+      //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+      //  String btName =
+      //    Settings.Secure.getString(MainActivity.appAct.getContentResolver(),
+      //      Settings.Global.DEVICE_NAME);
+      //
+      //  if (btName != null) {
+      //    deviceName = deviceName.concat(Character.toString('\n'));
+      //    deviceName = deviceName.concat(btName);
+      //  }
+      //}
+      // #endregion
+    }
+
+    @Override
+    public void draw() {
+      background(0);
+
+      ArrayList<String> possibleServers = getNetworks();
+      boolean noServers = possibleServers == null;
+
+      // Send an `ADD_ME` request to all servers!:
+      if (!(noServers || SketchWithScenes.super.inSession)) {
+        for (String s : possibleServers)
+          socket.sendCode(RequestCode.ADD_ME,
+            // The manufacturer-assigned name of the Android device:
+            Build.MODEL,
+            // Finally, our IP and port number!:
+            s, RequestCode.SERVER_PORT);
+      }
+
+      // Give a prompt accordingly:
+      text(MainActivity.appAct.getString(
+        noServers? R.string.loadScene_no_wifi
+          : R.string.loadScene_looking_for_servers), cx, cy);
+    }
+
+    @Override
     public void onBackPressed() {
       completeExit();
     }
   };
 
   ClientScene workScene = new ClientScene() {
+    ArrayList buttons;
+
     @Override
     public void setup() {
       // Ok bois, time for a little speed!...
@@ -132,7 +131,8 @@ public class SketchWithScenes extends Sketch {
     @Override
     public void onPause() {
       // Ok, so the app basically exited. No, I won't use `savedInstanceState` :joy:
-      //quickExit();
+      quickExitIfCan();
+      completeExit();
     }
   };
 
