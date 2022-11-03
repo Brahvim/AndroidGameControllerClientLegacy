@@ -13,13 +13,11 @@ public class SketchWithScenes extends Sketch {
     }
 
     ClientScene loadScene = new ClientScene() {
-        boolean susRequests = false; // Is this user legitimately trying to connect? <_<
-
         @Override
         public void onReceive(byte[] p_data, String p_ip, int p_port) {
             System.out.printf(
-              "[LOAD SCENE] Received `%d` bytes saying \"%s\" from IP: `%s`, port:`%d`.\n",
-              p_data.length, new String(p_data), p_ip, p_port);
+              "[LOAD SCENE] Received `%d` bytes from IP: `%s`, port:`%d`.\n",
+              p_data.length, p_ip, p_port);
 
             if (RequestCode.packetHasCode(p_data)) {
                 RequestCode code = RequestCode.fromPacket(p_data);
@@ -68,7 +66,7 @@ public class SketchWithScenes extends Sketch {
             boolean noServers = possibleServers == null;
 
             // Send an `ADD_ME` request to all servers!:
-            if (!(noServers || SketchWithScenes.super.inSession && susRequests)) {
+            if (!(noServers || SketchWithScenes.super.inSession)) {
                 for (String s : possibleServers)
                     socket.sendCode(RequestCode.ADD_ME,
                       // The manufacturer-assigned name of the Android device:
