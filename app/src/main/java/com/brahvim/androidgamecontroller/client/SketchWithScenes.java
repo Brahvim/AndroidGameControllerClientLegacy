@@ -5,10 +5,13 @@ import android.os.Process;
 
 import com.brahvim.androidgamecontroller.RequestCode;
 import com.brahvim.androidgamecontroller.client.render.ButtonRenderer;
+import com.brahvim.androidgamecontroller.serial.ByteSerial;
 import com.brahvim.androidgamecontroller.serial.config.ButtonConfig;
+import com.brahvim.androidgamecontroller.serial.config.ConfigurationPacket;
 
 import java.util.ArrayList;
 
+import processing.core.PVector;
 import processing.event.TouchEvent;
 
 public class SketchWithScenes extends Sketch {
@@ -125,10 +128,42 @@ public class SketchWithScenes extends Sketch {
             frameRate(60);
             textSize(Sketch.DEFAULT_FONT_SIZE);
 
+            ConfigurationPacket configsToSend = new ConfigurationPacket();
+
+            // region Preparing the packet.
+            configsToSend.AGC_VERSION = RequestCode.CLIENT_CURRENT_VERSION;
+            configsToSend.appStartMilliSinceEpoch =
+              System.currentTimeMillis() - MainActivity.sketch.millis();
+            configsToSend.screenDimensions = new PVector(width, height);
+
+            configsToSend.buttons = new ArrayList<>();
+            configsToSend.dpadButtons = new ArrayList<>();
+            configsToSend.thumbsticks = new ArrayList<>();
+            configsToSend.touchpads = new ArrayList<>();
+            // endregion
+
             buttonRenderers = new ArrayList<>();
 
-            buttonRenderers.add(new ButtonRenderer(
-              new ButtonConfig(cx, cy, "A")));
+            // region Making buttons!
+            buttonRenderers.add(
+              new ButtonRenderer(configsToSend.addObject(
+                new ButtonConfig(cx, cy, "A"))
+              ));
+
+            buttonRenderers.add(
+              new ButtonRenderer(configsToSend.addObject(
+                new ButtonConfig(cx, cy, "A"))
+              ));
+
+            buttonRenderers.add(
+              new ButtonRenderer(configsToSend.addObject(
+                new ButtonConfig(cx, cy, "A"))
+              ));
+            // endregion
+
+            Sketch.MY_CONFIG = configsToSend;
+            socket.sendCode(RequestCode.CLIENT_SENDS_CONFIG,
+              ByteSerial.toBytes(Sketch.MY_CONFIG), serverIp, RequestCode.SERVER_PORT);
         }
 
         @Override

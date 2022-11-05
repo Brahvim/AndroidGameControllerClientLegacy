@@ -1,6 +1,7 @@
 package com.brahvim.androidgamecontroller.client;
 
 import com.brahvim.androidgamecontroller.RequestCode;
+import com.brahvim.androidgamecontroller.serial.config.ConfigurationPacket;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -21,6 +22,7 @@ public class Sketch extends PApplet {
     public AgcClientSocket socket;
     public String serverIp;
     public boolean inSession; // Is the client sending the server data already?
+    public static ConfigurationPacket MY_CONFIG;
     // endregion
 
     // region Boilerplate-y stuff.
