@@ -3,14 +3,28 @@
     <string name="app_name" translatable="false">AndroidGameController</string>
 
     <string name="loadScene_looking_for_servers">
-        Looking for AndroidGameController servers\n
-        on your network!
-    </string>
+            Looking for AndroidGameController servers\n
+            on your network!
+        </string>
+
+    <string name="loadScene_press_for_hotspot">
+            (If you are using your WiFi hotspot to connect,\n
+            please hold a finger on the screen :)!)
+        </string>
 
     <string name="loadScene_no_wifi" formatted="true">
-        Huh, no network(s)..?\n
-        Please connect to the WiFi network\n
-        your computer is connected to!
-    </string>
+            Huh, no network(s)..?\n
+            Please connect to the WiFi network\n
+            your computer is connected to!
+        </string>
+
+    <string name="loadScene_hotspot_mode_title">
+            Hotspot mode!
+        </string>
+
+    <string name="loadScene_hotspot_mode_description">
+        AGC will now try to connect to a server\n
+        on your phone\'s hotspot and not your WiFi network!
+        </string>
 
 </resources>

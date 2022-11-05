@@ -8,11 +8,15 @@ import com.brahvim.androidgamecontroller.RequestCode;
 import java.util.ArrayList;
 
 public class SketchWithScenes extends Sketch {
+    String broadAddr = getBroadAddr();
+
     void appStart() {
         ClientScene.setScene(loadScene);
     }
 
     ClientScene loadScene = new ClientScene() {
+        public final int ADD_ME_REQUEST_INTERVAL = 4;
+
         @Override
         public void onReceive(byte[] p_data, String p_ip, int p_port) {
             System.out.printf(
@@ -35,27 +39,30 @@ public class SketchWithScenes extends Sketch {
             } // End of `packetHasCode()` check.
         } // End of `onReceive()`.
 
+        public void sendAddMeRequest(boolean p_hotspotMode, boolean p_noServers,
+                                     ArrayList<String> p_networks) {
+            if (p_hotspotMode) {
+                // Send an `ADD_ME`request to all servers on the LAN!~:
+                if (!(p_noServers || SketchWithScenes.super.inSession)) {
+                    for (String s : p_networks)
+                        socket.sendCode(RequestCode.ADD_ME,
+                          // The manufacturer - assigned name of the Android device:
+                          Build.MODEL,
+                          // Finally, our IP and port number !:
+                          s, RequestCode.SERVER_PORT);
+                } else {
+                    socket.sendCode(RequestCode.ADD_ME,
+                      // The manufacturer - assigned name of the Android device:
+                      Build.MODEL,
+                      // Finally, the universal LAN broadcast IP and port number!:
+                      "255.255.255.255", RequestCode.SERVER_PORT);
+                }
+            }
+        }
+
         @Override
-        //@RequiresApi(api = Build.VERSION_CODES.N_MR1)
-        // ^^^ Better put this annotation for a function
-        // that RETURNS the strings, concatenated.
         public void setup() {
-            // Waah! No spam! Slow down!:
-            frameRate(4);
-
-            // region Code to get the bluetooth name.
-            //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-            //  String btName =
-            //    Settings.Secure.getString(MainActivity.appAct.getContentResolver(),
-            //      Settings.Global.DEVICE_NAME);
-            //
-            //  if (btName != null) {
-            //    deviceName = deviceName.concat(Character.toString('\n'));
-            //    deviceName = deviceName.concat(btName);
-            //  }
-            //}
-            // endregion
-
+            frameRate(30);
         }
 
         @Override
@@ -63,22 +70,40 @@ public class SketchWithScenes extends Sketch {
             background(0);
 
             ArrayList<String> possibleServers = getNetworks();
-            boolean noServers = possibleServers == null;
+            boolean noServers = possibleServers == null,
 
-            // Send an `ADD_ME` request to all servers!:
-            if (!(noServers || SketchWithScenes.super.inSession)) {
-                for (String s : possibleServers)
-                    socket.sendCode(RequestCode.ADD_ME,
-                      // The manufacturer-assigned name of the Android device:
-                      Build.MODEL,
-                      // Finally, our IP and port number!:
-                      s, RequestCode.SERVER_PORT);
+              // If they're pressing on the screen, it means that
+              // they want to search on their WiFi hotspot instead.
+              // ..that's probably going to be only me!
+              hotspotMode = touches.length > 0;
+
+            if (frameCount % ADD_ME_REQUEST_INTERVAL == 0)
+                sendAddMeRequest(hotspotMode, noServers, possibleServers);
+
+            // Rendering!:
+            if (hotspotMode) {
+                textSize(Sketch.DEFAULT_FONT_SIZE * 1.5f);
+                float gap1 = textAscent() - textDescent() * 12;
+
+                text(MainActivity.appAct.getString(
+                  R.string.loadScene_hotspot_mode_title), cx, cy);
+
+                textSize(Sketch.DEFAULT_FONT_SIZE * 0.75f);
+                text(MainActivity.appAct.getString(
+                  R.string.loadScene_hotspot_mode_description), cx, cy - gap1);
+            } else {
+                textSize(Sketch.DEFAULT_FONT_SIZE);
+                text(MainActivity.appAct.getString(
+                  noServers? R.string.loadScene_no_wifi
+                    : R.string.loadScene_looking_for_servers), cx, cy);
+
+                float gap1 = textAscent() - textDescent() * 16;
+                textSize(Sketch.DEFAULT_FONT_SIZE * 0.5f);
+
+                text(MainActivity.appAct.getString(
+                    R.string.loadScene_press_for_hotspot),
+                  cx, cy - gap1);
             }
-
-            // Give a prompt accordingly:
-            text(MainActivity.appAct.getString(
-              noServers? R.string.loadScene_no_wifi
-                : R.string.loadScene_looking_for_servers), cx, cy);
         }
 
         @Override
@@ -86,6 +111,7 @@ public class SketchWithScenes extends Sketch {
             completeExit();
         }
     };
+
 
     ClientScene workScene = new ClientScene() {
         ArrayList buttons;
@@ -104,7 +130,8 @@ public class SketchWithScenes extends Sketch {
 
         @Override
         public void onReceive(byte[] p_data, String p_ip, int p_port) {
-            System.out.printf("Received *some* bytes from IP: `%s`, on port:`%d`.\n", p_ip, p_port);
+            System.out.printf("Received *some* bytes from IP: `%s`, on port:`%d`.\n", p_ip,
+              p_port);
 
             if (RequestCode.packetHasCode(p_data)) {
                 RequestCode code = RequestCode.fromPacket(p_data);
