@@ -163,7 +163,8 @@ public class SketchWithScenes extends Sketch {
 
             Sketch.MY_CONFIG = configsToSend;
             socket.sendCode(RequestCode.CLIENT_SENDS_CONFIG,
-              ByteSerial.toBytes(Sketch.MY_CONFIG), serverIp, RequestCode.SERVER_PORT);
+              ByteSerial.toBytes(Sketch.MY_CONFIG),
+              serverIp, RequestCode.SERVER_PORT);
         }
 
         @Override
