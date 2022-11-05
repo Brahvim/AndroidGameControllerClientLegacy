@@ -4,11 +4,15 @@ import android.os.Build;
 import android.os.Process;
 
 import com.brahvim.androidgamecontroller.RequestCode;
+import com.brahvim.androidgamecontroller.client.render.ButtonRenderer;
+import com.brahvim.androidgamecontroller.serial.config.ButtonConfig;
 
 import java.util.ArrayList;
 
+import processing.event.TouchEvent;
+
 public class SketchWithScenes extends Sketch {
-    String broadAddr = getBroadAddr();
+    //String broadAddr = getBroadAddr();
 
     void appStart() {
         ClientScene.setScene(loadScene);
@@ -112,20 +116,44 @@ public class SketchWithScenes extends Sketch {
         }
     };
 
-
     ClientScene workScene = new ClientScene() {
-        ArrayList buttons;
+        ArrayList<ButtonRenderer> buttonRenderers;
 
         @Override
         public void setup() {
             // Ok bois, time for a little speed!...
-            frameRate(30);
+            frameRate(60);
+            textSize(Sketch.DEFAULT_FONT_SIZE);
+
+            buttonRenderers = new ArrayList<>();
+
+            buttonRenderers.add(new ButtonRenderer(
+              new ButtonConfig(cx, cy, "A")));
         }
 
         @Override
         public void draw() {
             background(0);
-            text("We're working! \":D!", cx, cy);
+            //text("We're working! \":D!", cx, cy);
+
+            for (ButtonRenderer r : buttonRenderers) {
+                r.draw(g);
+            }
+
+        }
+
+        @Override
+        public void touchStarted(TouchEvent p_touchEvent) {
+            for (ButtonRenderer r : buttonRenderers) {
+                r.touchStarted();
+            }
+        }
+
+        @Override
+        public void touchEnded(TouchEvent p_touchEvent) {
+            for (ButtonRenderer r : buttonRenderers) {
+                r.touchReleased();
+            }
         }
 
         @Override

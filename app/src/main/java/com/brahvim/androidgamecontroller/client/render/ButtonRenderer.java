@@ -3,14 +3,16 @@ package com.brahvim.androidgamecontroller.client.render;
 import com.brahvim.androidgamecontroller.serial.config.ButtonConfig;
 import com.brahvim.androidgamecontroller.serial.state.ButtonState;
 
+import processing.core.PConstants;
 import processing.core.PGraphics;
 
 public class ButtonRenderer {
     private ButtonConfig config;
     private ButtonState state;
 
-    ButtonRenderer(ButtonConfig p_config) {
+    public ButtonRenderer(ButtonConfig p_config) {
         this.config = p_config;
+        this.state = new ButtonState();
     }
 
     public void draw(PGraphics p_graphics) {
@@ -28,32 +30,34 @@ public class ButtonRenderer {
         switch (this.config.shape) {
             case ROUND:
                 p_graphics.ellipse(0, 0, 1, 1);
-                p_graphics.textSize(0.4f);
-                //gr.textAlign(CENTER, CENTER);
-                p_graphics.text("Y", 0, 0);
                 break;
 
             case RECTANGLE:
-                //gr.rectMode(CENTER);
+                //p_graphics.rectMode(PConstants.CENTER);
                 p_graphics.rect(0, 0, 1.2f, 0.55f,
                   0.1f, 0.1f, 0.1f, 0.1f);
-                p_graphics.textSize(0.4f);
-                //gr.textAlign(CENTER, CENTER);
-                p_graphics.text("L", 0, 0);
                 break;
 
             default:
                 break;
         }
 
+        p_graphics.textSize(0.4f);
+        p_graphics.textAlign(PConstants.CENTER, PConstants.CENTER);
+        p_graphics.text(this.config.text, 0, 0);
+
         p_graphics.popMatrix();
         p_graphics.popStyle();
     }
 
-    public void mousePressed() {
+    public void touchStarted() {
+        this.state.pressed = true;
+        //socket.send();
     }
 
-    public void mouseReleased() {
+    public void touchReleased() {
+        this.state.pressed = false;
+        //socket.send();
     }
 
     public boolean wasPressed() {

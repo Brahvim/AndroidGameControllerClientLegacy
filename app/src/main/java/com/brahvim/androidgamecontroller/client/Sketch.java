@@ -4,12 +4,7 @@ import com.brahvim.androidgamecontroller.RequestCode;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.net.InetAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 
 import processing.core.PApplet;
 import processing.core.PFont;
@@ -33,7 +28,8 @@ public class Sketch extends PApplet {
     public float frameStartTime, pframeTime, frameTime;
     public static PFont DEFAULT_FONT;
     public static final float DEFAULT_FONT_SIZE = 72;
-    public float cx, cy, qx, qy, q3x, q3y;
+    public float cx, cy, qx, qy, q3x, q3y, scr, fov = PI / 3;
+    public PVector cameraPos, cameraCenter, cameraUp;
     // endregion
     // endregion
 
@@ -48,6 +44,10 @@ public class Sketch extends PApplet {
         updateRatios();
 
         socket = new AgcClientSocket();
+
+        cameraUp = new PVector(0, 1, 0);
+        cameraPos = new PVector(cx, cy, 600);
+        cameraCenter = new PVector(cx, cy);
 
         // region Processing style settings.
         Sketch.DEFAULT_FONT = createFont("SansSerif", Sketch.DEFAULT_FONT_SIZE);
@@ -73,6 +73,7 @@ public class Sketch extends PApplet {
 
     // region My usual boilerplate methods!
     public void updateRatios() {
+        scr = (float)width / (float)height;
         cx = width * 0.5f;
         cy = height * 0.5f;
         qx = cx * 0.5f;
@@ -99,6 +100,10 @@ public class Sketch extends PApplet {
         frameTime = frameStartTime - pframeTime;
         pframeTime = frameStartTime;
 
+        camera(cameraPos.x, cameraPos.y, cameraPos.z,
+          cameraCenter.x, cameraCenter.y, cameraCenter.z,
+          cameraUp.x, cameraUp.y, cameraUp.z);
+        perspective(fov, scr, 0.1f, 10_000);
         unprojectTouches();
 
         if (ClientScene.currentScene != null)
@@ -130,6 +135,7 @@ public class Sketch extends PApplet {
     }
 
     // Courtesy of [https://stackoverflow.com/a/29238764]
+    /*
     public static String getBroadAddr() {
         Enumeration<NetworkInterface> interfaces = null;
         try {
@@ -163,6 +169,7 @@ public class Sketch extends PApplet {
 
         return null;
     }
+     */
 
 
     // region Event callbacks.
