@@ -12,7 +12,7 @@ import processing.core.PFont;
 import processing.core.PVector;
 import processing.event.MouseEvent;
 import processing.event.TouchEvent;
-import processing.opengl.PGraphics3D;
+import processing.opengl.PGraphicsOpenGL;
 
 public class Sketch extends PApplet {
     // region Fields! ":D!~
@@ -28,8 +28,7 @@ public class Sketch extends PApplet {
     // region Boilerplate-y stuff.
     public static final ArrayList<PVector> listUnprojectedTouches = new ArrayList<>(10);
     // ^^^ Funny how `ArrayList`s have a capacity of `10` by default, haha.
-    public static int numberOfLiveTouches;
-
+    public PGraphicsOpenGL glGraphics;
     public float frameStartTime, pframeTime, frameTime;
     public static PFont DEFAULT_FONT;
     public static final float DEFAULT_FONT_SIZE = 72;
@@ -38,6 +37,7 @@ public class Sketch extends PApplet {
     // endregion
     // endregion
 
+    // region Settings-Setup-Exit...
     @Override
     public void settings() {
         fullScreen(P3D);
@@ -49,6 +49,8 @@ public class Sketch extends PApplet {
         updateRatios();
 
         socket = new AgcClientSocket();
+
+        glGraphics = (PGraphicsOpenGL)g;
 
         cameraUp = new PVector(0, 1, 0);
         cameraPos = new PVector(cx, cy, 600);
@@ -75,6 +77,7 @@ public class Sketch extends PApplet {
         }
         super.exit();
     }
+    // endregion
 
     // region My usual boilerplate methods!
     public void updateRatios() {
@@ -88,6 +91,20 @@ public class Sketch extends PApplet {
     }
 
     public static void unprojectTouches() {
+        Sketch.listUnprojectedTouches.clear();
+        TouchEvent.Pointer[] touches = MainActivity.sketch.touches;
+
+        for (int i = 0; i < touches.length; i++) {
+            PVector u = new PVector(touches[i].x, touches[i].y);
+            u = MainActivity.sketch.glGraphics.modelviewInv.mult(u, null);
+            u = MainActivity.sketch.glGraphics.cameraInv.mult(u, null);
+            u.sub(MainActivity.sketch.width, MainActivity.sketch.height);
+            Sketch.listUnprojectedTouches.add(u);
+        }
+    }
+
+    /*
+    public static void unprojectTouches() {
         Unprojector.captureViewMatrix((PGraphics3D)MainActivity.sketch.g);
         Sketch.listUnprojectedTouches.clear();
 
@@ -100,6 +117,7 @@ public class Sketch extends PApplet {
             Sketch.listUnprojectedTouches.add(u);
         }
     }
+    */
     // endregion
 
     @Override
@@ -113,14 +131,12 @@ public class Sketch extends PApplet {
           cameraUp.x, cameraUp.y, cameraUp.z);
         perspective(fov, scr, 0.1f, 10_000);
 
-        Unprojector.captureViewMatrix((PGraphics3D)g);
-        //unprojectTouches();
-
         if (ClientScene.currentScene != null)
             ClientScene.currentScene.draw();
         else println("Current scene is `null`!");
     }
 
+    // region Custom methods.
     public ArrayList<String> getNetworks() {
         ArrayList<String> ret = new ArrayList<>(1);
 
@@ -180,6 +196,7 @@ public class Sketch extends PApplet {
         return null;
     }
      */
+    // endregion
 
     // region Event callbacks.
     // region Mouse events.
@@ -226,18 +243,19 @@ public class Sketch extends PApplet {
     // region Touch events (Andorid only, of course!).
     @Override
     public void touchStarted(TouchEvent p_touchEvent) {
-        Sketch.numberOfLiveTouches++;
+        Sketch.unprojectTouches();
         ClientScene.currentScene.touchStarted(p_touchEvent);
     }
 
     @Override
     public void touchMoved(processing.event.TouchEvent p_touchEvent) {
+        Sketch.unprojectTouches();
         ClientScene.currentScene.touchMoved(p_touchEvent);
     }
 
     @Override
     public void touchEnded(processing.event.TouchEvent p_touchEvent) {
-        Sketch.numberOfLiveTouches--;
+        Sketch.unprojectTouches();
         ClientScene.currentScene.touchEnded(p_touchEvent);
     }
     // endregion

@@ -124,11 +124,14 @@ public class SketchWithScenes extends Sketch {
 
     ClientScene workScene = new ClientScene() {
         ArrayList<ButtonRenderer> buttonRenderers;
+        //ArrayList<DpadButtonRenderer> dpadButtonRenderers;
+        //ArrayList<ThumbstickRenderer> thumbstickRenderers;
+        //ArrayList<TouchpadRenderer> touchpadRenderers;
 
         @Override
         public void setup() {
             // Ok bois, time for a little speed!...
-            frameRate(60);
+            frameRate(1000);
             textSize(Sketch.DEFAULT_FONT_SIZE);
 
             ConfigurationPacket configsToSend = new ConfigurationPacket();
@@ -150,17 +153,17 @@ public class SketchWithScenes extends Sketch {
             // region Making buttons!
             buttonRenderers.add(
               new ButtonRenderer(configsToSend.addObject(
-                new ButtonConfig(cx, cy, "A"))
+                new ButtonConfig(qx, q3y, "A"))
               ));
 
             buttonRenderers.add(
               new ButtonRenderer(configsToSend.addObject(
-                new ButtonConfig(cx, cy, "A"))
+                new ButtonConfig(q3x, q3y, "B"))
               ));
 
             buttonRenderers.add(
               new ButtonRenderer(configsToSend.addObject(
-                new ButtonConfig(cx, cy, "A"))
+                new ButtonConfig(cx, cy, "START"))
               ));
             // endregion
 
@@ -173,7 +176,6 @@ public class SketchWithScenes extends Sketch {
         @Override
         public void draw() {
             background(0);
-            //text("We're working! \":D!", cx, cy);
 
             if (buttonRenderers != null)
                 for (ButtonRenderer r : buttonRenderers) {
@@ -186,6 +188,14 @@ public class SketchWithScenes extends Sketch {
             if (buttonRenderers != null)
                 for (ButtonRenderer r : buttonRenderers) {
                     r.touchStarted();
+                }
+        }
+
+        @Override
+        public void touchMoved(TouchEvent p_touchEvent) {
+            if (buttonRenderers != null)
+                for (ButtonRenderer r : buttonRenderers) {
+                    r.touchMoved();
                 }
         }
 
@@ -248,5 +258,4 @@ public class SketchWithScenes extends Sketch {
         MainActivity.appAct.finish();
         Process.killProcess(Process.myPid());
     }
-
 }
