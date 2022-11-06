@@ -20,7 +20,7 @@ public class Sketch extends PApplet {
 
     // region Stuff that makes AGC *GO!*:
     public static AgcClientSocket socket;
-    public String serverIp;
+    public static String serverIp;
     public boolean inSession; // Is the client sending the server data already?
     public static ConfigurationPacket MY_CONFIG;
     // endregion

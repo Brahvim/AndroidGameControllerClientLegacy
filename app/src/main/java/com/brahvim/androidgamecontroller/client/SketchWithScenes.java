@@ -166,7 +166,7 @@ public class SketchWithScenes extends Sketch {
 
             Sketch.MY_CONFIG = configsToSend;
             socket.sendCode(RequestCode.CLIENT_SENDS_CONFIG,
-              ByteSerial.toBytes(Sketch.MY_CONFIG),
+              ByteSerial.encode(Sketch.MY_CONFIG),
               serverIp, RequestCode.SERVER_PORT);
         }
 
@@ -175,24 +175,26 @@ public class SketchWithScenes extends Sketch {
             background(0);
             //text("We're working! \":D!", cx, cy);
 
-            for (ButtonRenderer r : buttonRenderers) {
-                r.draw(g);
-            }
-
+            if (buttonRenderers != null)
+                for (ButtonRenderer r : buttonRenderers) {
+                    r.draw(g);
+                }
         }
 
         @Override
         public void touchStarted(TouchEvent p_touchEvent) {
-            for (ButtonRenderer r : buttonRenderers) {
-                r.touchStarted();
-            }
+            if (buttonRenderers != null)
+                for (ButtonRenderer r : buttonRenderers) {
+                    r.touchStarted();
+                }
         }
 
         @Override
         public void touchEnded(TouchEvent p_touchEvent) {
-            for (ButtonRenderer r : buttonRenderers) {
-                r.touchReleased();
-            }
+            if (buttonRenderers != null)
+                for (ButtonRenderer r : buttonRenderers) {
+                    r.touchReleased();
+                }
         }
 
         @Override
