@@ -25,16 +25,13 @@ public class ButtonRenderer extends ButtonRendererBase {
     }
 
     public void touchStarted() {
-        //this.recordTouch();
         this.sendState();
     }
 
     public void touchMoved() {
-        //this.recordTouch();
     }
 
     public void touchReleased() {
-        //this.recordTouch();
         this.sendState();
     }
 
