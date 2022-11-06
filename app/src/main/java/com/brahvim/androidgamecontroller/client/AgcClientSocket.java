@@ -38,7 +38,7 @@ public class AgcClientSocket extends UdpSocket {
         }
 
         super.send(toSend, p_ip, p_port);
-        System.out.printf("Sent code `%s` to IP: `%s`, port: `%d`.\n", p_code.toString(), p_ip,
+        System.out.printf("Sent code `%s` to IP: `%s`, port: `%d`.\n", p_code, p_ip,
           p_port);
     }
 

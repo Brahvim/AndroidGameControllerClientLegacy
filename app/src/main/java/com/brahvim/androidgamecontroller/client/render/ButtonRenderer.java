@@ -1,10 +1,13 @@
 package com.brahvim.androidgamecontroller.client.render;
 
+import com.brahvim.androidgamecontroller.client.CollisionAlgorithms;
+import com.brahvim.androidgamecontroller.client.Sketch;
 import com.brahvim.androidgamecontroller.serial.config.ButtonConfig;
 import com.brahvim.androidgamecontroller.serial.state.ButtonState;
 
 import processing.core.PConstants;
 import processing.core.PGraphics;
+import processing.core.PVector;
 
 public class ButtonRenderer {
     private ButtonConfig config;
@@ -51,8 +54,20 @@ public class ButtonRenderer {
     }
 
     public void touchStarted() {
-        this.state.pressed = true;
-        //socket.send();
+        Sketch.unprojectTouches();
+
+        PVector touch = Sketch.listUnprojectedTouches
+          .get(Sketch.listUnprojectedTouches.size());
+
+        switch (this.config.shape) {
+            case ROUND -> this.state.pressed = CollisionAlgorithms
+              .ptCircle(touch, this.config.transform, this.config.scale.x);
+
+            case RECTANGLE -> this.state.pressed = CollisionAlgorithms
+              .ptRect(touch, this.config.transform, this.config.scale);
+        }
+
+        //Sketch.socket.sendCode();
     }
 
     public void touchReleased() {

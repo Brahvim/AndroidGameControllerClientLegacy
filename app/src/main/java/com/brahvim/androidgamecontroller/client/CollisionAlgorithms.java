@@ -3,7 +3,7 @@ package com.brahvim.androidgamecontroller.client;
 import processing.core.PVector;
 
 // Courtesy of [https://github.com/bmoren/p5.collide2D]
-public class CollsionAlgorithms {
+public class CollisionAlgorithms {
     public static boolean ptPoly(float p_x, float p_y, PVector[] p_poly) {
         // As seen on Sir Ben's GitHub!:
         /*
@@ -68,15 +68,65 @@ public class CollsionAlgorithms {
         // :D
     }
 
-
     // Anybody who needs to copy these? LOL:
     // (...well I did! Because I already wrote them LOL.
     // Take a look at `https://editor.p5js.org/Brahvim/sketches/hyoou0Gkb` :D)
+
     public static boolean ptCircle(PVector p_point, PVector p_circlePos, float p_radius) {
-        return Math.pow(x - px, 2) + Math.pow(y - py, 2) < r * r;
+        return Math.pow(p_circlePos.x - p_point.x, 2)
+          + Math.pow(p_circlePos.y - p_point.y, 2)
+          < p_radius * p_radius;
     }
 
-    public static boolean ptRect() {
+    public static boolean ptRectByDims(
+      /* Vertex to check, */
+      float p_vertX, float p_vertY,
 
+      /* Start of the rectangle,*/
+      float p_rectStartX, float p_rectStartY,
+
+      /* Dimensions of the rectangle!: */
+      float p_rectWidth, float p_rectHeight) {
+        return CollisionAlgorithms.ptRect(
+          p_vertX, p_vertY,
+          p_rectStartX, p_rectStartY,
+          p_rectStartX + p_rectWidth,
+          p_rectStartY + p_rectHeight);
+    }
+
+    public static boolean ptRectByDims(
+      PVector p_vertex,
+      PVector p_rectPos,
+      PVector p_rectDims) {
+        return CollisionAlgorithms.ptRect(
+          p_vertex.x, p_vertex.y,
+          p_rectPos.x, p_rectPos.y,
+          p_rectPos.x + p_rectDims.x,
+          p_rectPos.y + p_rectDims.y);
+    }
+
+    public static boolean ptRect(
+      PVector p_vertex,
+      PVector p_rectStart,
+      PVector p_rectEnd) {
+        return CollisionAlgorithms.ptRect(
+          p_vertex.x, p_vertex.y,
+          p_rectStart.x, p_rectStart.y,
+          p_rectEnd.x, p_rectEnd.y);
+    }
+
+    public static boolean ptRect(
+      /* Vertex to check, */
+      float p_vertX, float p_vertY,
+
+      /* Start of the rectangle,*/
+      float p_rectStartX, float p_rectStartY,
+
+      /* End of the rectangle!: */
+      float p_rectEndX, float p_rectEndY) {
+        return p_vertX > p_rectStartX
+          && p_vertX < p_rectEndX
+          && p_vertY > p_rectStartY
+          && p_vertY < p_rectEndY;
     }
 }

@@ -19,14 +19,17 @@ public class Sketch extends PApplet {
     private static final int SERVER_PORT = RequestCode.SERVER_PORT;
 
     // region Stuff that makes AGC *GO!*:
-    public AgcClientSocket socket;
+    public static AgcClientSocket socket;
     public String serverIp;
     public boolean inSession; // Is the client sending the server data already?
     public static ConfigurationPacket MY_CONFIG;
     // endregion
 
     // region Boilerplate-y stuff.
-    public static final PVector[] unprojectedTouches = new PVector[10];
+    public static final ArrayList<PVector> listUnprojectedTouches = new ArrayList<>(10);
+    // ^^^ Funny how `ArrayList`s have a capacity of `10` by default, haha.
+    public static int numberOfLiveTouches;
+
     public float frameStartTime, pframeTime, frameTime;
     public static PFont DEFAULT_FONT;
     public static final float DEFAULT_FONT_SIZE = 72;
@@ -84,14 +87,17 @@ public class Sketch extends PApplet {
         q3y = cy + qy;
     }
 
-    public void unprojectTouches() {
-        Unprojector.captureViewMatrix((PGraphics3D)g);
+    public static void unprojectTouches() {
+        Unprojector.captureViewMatrix((PGraphics3D)MainActivity.sketch.g);
+        Sketch.listUnprojectedTouches.clear();
 
-        for (int i = 0; i < touches.length; i++) {
-            TouchEvent.Pointer p = touches[i];
-            PVector u = Sketch.unprojectedTouches[i];
-            if (!(p == null || u == null))
-                Unprojector.gluUnProject(p.x, height - p.y, 0, u);
+        for (int i = 0; i < MainActivity.sketch.touches.length; i++) {
+            TouchEvent.Pointer p = MainActivity.sketch.touches[i];
+            PVector u = new PVector();
+            if (p != null)
+                Unprojector.gluUnProject(
+                  p.x, MainActivity.sketch.height - p.y, 0, u);
+            Sketch.listUnprojectedTouches.add(u);
         }
     }
     // endregion
@@ -106,7 +112,9 @@ public class Sketch extends PApplet {
           cameraCenter.x, cameraCenter.y, cameraCenter.z,
           cameraUp.x, cameraUp.y, cameraUp.z);
         perspective(fov, scr, 0.1f, 10_000);
-        unprojectTouches();
+
+        Unprojector.captureViewMatrix((PGraphics3D)g);
+        //unprojectTouches();
 
         if (ClientScene.currentScene != null)
             ClientScene.currentScene.draw();
@@ -217,7 +225,8 @@ public class Sketch extends PApplet {
 
     // region Touch events (Andorid only, of course!).
     @Override
-    public void touchStarted(processing.event.TouchEvent p_touchEvent) {
+    public void touchStarted(TouchEvent p_touchEvent) {
+        Sketch.numberOfLiveTouches++;
         ClientScene.currentScene.touchStarted(p_touchEvent);
     }
 
@@ -228,6 +237,7 @@ public class Sketch extends PApplet {
 
     @Override
     public void touchEnded(processing.event.TouchEvent p_touchEvent) {
+        Sketch.numberOfLiveTouches--;
         ClientScene.currentScene.touchEnded(p_touchEvent);
     }
     // endregion
