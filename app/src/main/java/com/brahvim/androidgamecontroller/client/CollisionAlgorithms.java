@@ -79,13 +79,8 @@ public class CollisionAlgorithms {
     }
 
     public static boolean ptRectByDims(
-      /* Vertex to check, */
       float p_vertX, float p_vertY,
-
-      /* Start of the rectangle,*/
       float p_rectStartX, float p_rectStartY,
-
-      /* Dimensions of the rectangle!: */
       float p_rectWidth, float p_rectHeight) {
         return CollisionAlgorithms.ptRect(
           p_vertX, p_vertY,
@@ -116,13 +111,8 @@ public class CollisionAlgorithms {
     }
 
     public static boolean ptRect(
-      /* Vertex to check, */
       float p_vertX, float p_vertY,
-
-      /* Start of the rectangle,*/
       float p_rectStartX, float p_rectStartY,
-
-      /* End of the rectangle!: */
       float p_rectEndX, float p_rectEndY) {
         return p_vertX > p_rectStartX
           && p_vertX < p_rectEndX

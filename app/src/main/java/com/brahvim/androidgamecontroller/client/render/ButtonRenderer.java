@@ -2,6 +2,7 @@ package com.brahvim.androidgamecontroller.client.render;
 
 import com.brahvim.androidgamecontroller.client.CollisionAlgorithms;
 import com.brahvim.androidgamecontroller.client.Sketch;
+import com.brahvim.androidgamecontroller.serial.ByteSerial;
 import com.brahvim.androidgamecontroller.serial.config.ButtonConfig;
 import com.brahvim.androidgamecontroller.serial.state.ButtonState;
 
@@ -67,7 +68,7 @@ public class ButtonRenderer {
               .ptRect(touch, this.config.transform, this.config.scale);
         }
 
-        //Sketch.socket.sendCode();
+        Sketch.socket.send(ByteSerial);
     }
 
     public void touchReleased() {
