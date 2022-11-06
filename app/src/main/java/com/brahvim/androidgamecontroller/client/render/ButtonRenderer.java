@@ -20,9 +20,7 @@ public class ButtonRenderer extends ButtonRendererBase {
 
     @Override
     public void draw(@NonNull PGraphics p_graphics) {
-        this.state.pressed = false;
         this.recordTouch();
-        this.state.pressed &= MainActivity.sketch.mousePressed;
         super.draw(p_graphics);
     }
 
@@ -46,6 +44,8 @@ public class ButtonRenderer extends ButtonRendererBase {
     }
 
     private void recordTouch() {
+        this.state.pressed = false;
+
         for (PVector v : Sketch.listUnprojectedTouches) {
             switch (super.config.shape) {
                 case ROUND -> super.state.pressed = CollisionAlgorithms
@@ -67,6 +67,8 @@ public class ButtonRenderer extends ButtonRendererBase {
             if (this.state.pressed)
                 break;
         }
+
+        this.state.pressed &= MainActivity.sketch.mousePressed;
     }
 
 } // End of class.
