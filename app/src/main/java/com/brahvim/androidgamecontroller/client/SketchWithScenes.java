@@ -4,7 +4,7 @@ import android.os.Build;
 import android.os.Process;
 
 import com.brahvim.androidgamecontroller.RequestCode;
-import com.brahvim.androidgamecontroller.client.render.ButtonRenderer;
+import com.brahvim.androidgamecontroller.client.clientrender.ButtonRenderer;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
 import com.brahvim.androidgamecontroller.serial.config.ButtonConfig;
 import com.brahvim.androidgamecontroller.serial.config.ConfigurationPacket;
@@ -166,6 +166,11 @@ public class SketchWithScenes extends Sketch {
                 new ButtonConfig(cx, cy, "START"))
               ));
             // endregion
+
+            System.out.println("Configuration hashes:");
+            for (ButtonRenderer r : buttonRenderers) {
+                System.out.println(r.configHash());
+            }
 
             Sketch.MY_CONFIG = configsToSend;
             socket.sendCode(RequestCode.CLIENT_SENDS_CONFIG,

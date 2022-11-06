@@ -1,4 +1,4 @@
-package com.brahvim.androidgamecontroller.client.render;
+package com.brahvim.androidgamecontroller.client.clientrender;
 
 import androidx.annotation.NonNull;
 
@@ -36,6 +36,7 @@ public class ButtonRenderer extends ButtonRendererBase {
     }
 
     private void sendState() {
+        super.state.configHash = super.config.hashCode();
         Sketch.socket.send(ByteSerial.encode(super.state),
           Sketch.serverIp, RequestCode.SERVER_PORT);
     }
