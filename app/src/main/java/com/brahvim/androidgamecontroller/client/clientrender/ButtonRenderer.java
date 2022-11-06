@@ -21,9 +21,13 @@ public class ButtonRenderer extends ButtonRendererBase {
     }
 
     public void touchMoved() {
+        // Record previous state:
         super.state.ppressed = super.state.pressed;
+
+        // Get current state:
         this.recordTouch();
 
+        // If changes took place, send 'em over! ":D
         if (super.state.ppressed != super.state.pressed)
             this.sendState();
     }
