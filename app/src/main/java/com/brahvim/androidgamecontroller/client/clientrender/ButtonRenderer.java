@@ -1,7 +1,5 @@
 package com.brahvim.androidgamecontroller.client.clientrender;
 
-import androidx.annotation.NonNull;
-
 import com.brahvim.androidgamecontroller.RequestCode;
 import com.brahvim.androidgamecontroller.client.CollisionAlgorithms;
 import com.brahvim.androidgamecontroller.client.MainActivity;
@@ -10,7 +8,6 @@ import com.brahvim.androidgamecontroller.render.ButtonRendererBase;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
 import com.brahvim.androidgamecontroller.serial.config.ButtonConfig;
 
-import processing.core.PGraphics;
 import processing.core.PVector;
 
 public class ButtonRenderer extends ButtonRendererBase {
@@ -18,25 +15,27 @@ public class ButtonRenderer extends ButtonRendererBase {
         super(p_config);
     }
 
-    @Override
-    public void draw(@NonNull PGraphics p_graphics) {
-        this.recordTouch();
-        super.draw(p_graphics);
-    }
-
     public void touchStarted() {
+        this.recordTouch();
         this.sendState();
     }
 
     public void touchMoved() {
+        super.state.ppressed = super.state.pressed;
+        this.recordTouch();
+
+        if (super.state.ppressed != super.state.pressed)
+            this.sendState();
     }
 
     public void touchReleased() {
+        this.recordTouch();
         this.sendState();
     }
 
     private void sendState() {
         super.state.configHash = super.config.hashCode();
+
         Sketch.socket.send(ByteSerial.encode(super.state),
           Sketch.serverIp, RequestCode.SERVER_PORT);
     }
@@ -61,7 +60,6 @@ public class ButtonRenderer extends ButtonRendererBase {
                         transform.y + (scale.y * 0.5f));
                 }
             }
-
             if (this.state.pressed)
                 break;
         }
