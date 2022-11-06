@@ -173,7 +173,6 @@ public class Sketch extends PApplet {
     }
      */
 
-
     // region Event callbacks.
     // region Mouse events.
     public void mousePressed() {

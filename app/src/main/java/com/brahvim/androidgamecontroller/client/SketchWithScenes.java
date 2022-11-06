@@ -15,7 +15,7 @@ import processing.core.PVector;
 import processing.event.TouchEvent;
 
 public class SketchWithScenes extends Sketch {
-    //String broadAddr = getBroadAddr();
+    public final String BROADCAST_ADDRESS = "255.255.255.255"; //getBroadAddr();
 
     void appStart() {
         ClientScene.setScene(loadScene);
@@ -57,13 +57,13 @@ public class SketchWithScenes extends Sketch {
                           Build.MODEL,
                           // Finally, our IP and port number !:
                           s, RequestCode.SERVER_PORT);
-                } else {
-                    socket.sendCode(RequestCode.ADD_ME,
-                      // The manufacturer - assigned name of the Android device:
-                      Build.MODEL,
-                      // Finally, the universal LAN broadcast IP and port number!:
-                      "255.255.255.255", RequestCode.SERVER_PORT);
                 }
+            } else {
+                socket.sendCode(RequestCode.ADD_ME,
+                  // The manufacturer - assigned name of the Android device:
+                  Build.MODEL,
+                  // Finally, the universal LAN broadcast IP and port number!:
+                  "255.255.255.255", RequestCode.SERVER_PORT);
             }
         }
 
@@ -82,7 +82,7 @@ public class SketchWithScenes extends Sketch {
               // If they're pressing on the screen, it means that
               // they want to search on their WiFi hotspot instead.
               // ..that's probably going to be only me!
-              hotspotMode = touches.length > 0;
+              hotspotMode = touches.length > 0 && !noServers;
 
             if (frameCount % ADD_ME_REQUEST_INTERVAL == 0)
                 sendAddMeRequest(hotspotMode, noServers, possibleServers);
@@ -104,14 +104,17 @@ public class SketchWithScenes extends Sketch {
                   noServers? R.string.loadScene_no_wifi
                     : R.string.loadScene_looking_for_servers), cx, cy);
 
-                float gap1 = textAscent() - textDescent() * 16;
-                textSize(Sketch.DEFAULT_FONT_SIZE * 0.5f);
+                if (!noServers) {
+                    float gap1 = textAscent() - textDescent() * 16;
+                    textSize(Sketch.DEFAULT_FONT_SIZE * 0.5f);
 
-                text(MainActivity.appAct.getString(
-                    R.string.loadScene_press_for_hotspot),
-                  cx, cy - gap1);
-            }
-        }
+                    text(MainActivity.appAct.getString(
+                        R.string.loadScene_press_for_hotspot),
+                      cx, cy - gap1);
+                }
+
+            } // End of `hotspotMode` check.
+        } // End of `loadScene.draw()`.
 
         @Override
         public void onBackPressed() {
