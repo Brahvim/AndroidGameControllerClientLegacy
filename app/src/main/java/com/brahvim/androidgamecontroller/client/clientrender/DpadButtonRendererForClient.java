@@ -52,9 +52,9 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
 
         System.out.printf("`%s` DPAD's state changed, sending it over...\n",
           this.config.dir.toString());
-        System.out.printf("It was previously %s pressed and is now %s pressed.\n",
-          this.state.ppressed? "" : "not",
-          this.state.pressed? "" : "not");
+        System.out.printf("It was previously %s pressed and is now %spressed.\n",
+          this.state.ppressed? "" : "not ",
+          this.state.pressed? "" : "not ");
 
         Sketch.socket.send(ByteSerial.encode(this.state),
           Sketch.serverIp, RequestCode.SERVER_PORT);
