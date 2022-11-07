@@ -129,8 +129,8 @@ public class SketchWithScenes extends Sketch {
     ClientScene workScene = new ClientScene() {
         ArrayList<ButtonRendererForClient> buttonRenderers;
         ArrayList<DpadButtonRendererForClient> dpadButtonRenderers;
-        //ArrayList<ThumbstickRenderer> thumbstickRenderers;
-        //ArrayList<TouchpadRenderer> touchpadRenderers;
+        //ArrayList<ThumbstickRendererForClient> thumbstickRenderers;
+        //ArrayList<TouchpadRendererForClient> touchpadRenderers;
 
         @Override
         public void setup() {
@@ -155,6 +155,8 @@ public class SketchWithScenes extends Sketch {
             buttonRenderers = new ArrayList<>();
             dpadButtonRenderers = new ArrayList<>();
 
+            // Don't forget `configsToSend.addObject()` when making new configurations!
+
             // region Making buttons!
             buttonRenderers.add(
               new ButtonRendererForClient(configsToSend.addObject(
@@ -175,17 +177,18 @@ public class SketchWithScenes extends Sketch {
 
             // region Making DPAD buttons!
             dpadButtonRenderers.add(new DpadButtonRendererForClient(
-              new DpadButtonConfig(
+              configsToSend.addObject(new DpadButtonConfig(
                 new PVector(qx - 80, q3y),
                 new PVector(100, 100),
-                DpadDirection.LEFT)
+                DpadDirection.LEFT))
             ));
 
             dpadButtonRenderers.add(new DpadButtonRendererForClient(
-              new DpadButtonConfig(
-                new PVector(qx + 80, q3y),
-                new PVector(100, 100),
-                DpadDirection.RIGHT)
+              configsToSend.addObject(
+                new DpadButtonConfig(
+                  new PVector(qx + 80, q3y),
+                  new PVector(100, 100),
+                  DpadDirection.RIGHT))
             ));
             // endregion
 
@@ -201,6 +204,7 @@ public class SketchWithScenes extends Sketch {
               serverIp, RequestCode.SERVER_PORT);
         }
 
+        // region `draw()` and other event callbacks from Processing.
         @Override
         public void draw() {
             background(0);
@@ -230,6 +234,7 @@ public class SketchWithScenes extends Sketch {
                 for (int i = 0; i < ClientRenderer.all.size(); i++)
                     ClientRenderer.all.get(i).touchEnded();
         }
+        // endregion
 
         @Override
         public void onReceive(byte[] p_data, String p_ip, int p_port) {
@@ -267,6 +272,7 @@ public class SketchWithScenes extends Sketch {
         }
     };
 
+    // region Stuff that helps AGC exit.
     void quickExitIfCan() {
         if (serverIp != null) {
             socket.sendCode(RequestCode.CLIENT_CLOSE, serverIp, RequestCode.SERVER_PORT);
@@ -282,4 +288,5 @@ public class SketchWithScenes extends Sketch {
         MainActivity.appAct.finish();
         Process.killProcess(Process.myPid());
     }
+    // endregion
 }

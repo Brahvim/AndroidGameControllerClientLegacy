@@ -44,7 +44,7 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
     }
 
     private void sendStateIfChanged() {
-        this.state.configHash = this.config.hashCode();
+        this.state.controlNumber = this.config.controlNumber;
 
         // If the state didn't change, let's go back!:
         if (this.state.ppressed == this.state.pressed)
