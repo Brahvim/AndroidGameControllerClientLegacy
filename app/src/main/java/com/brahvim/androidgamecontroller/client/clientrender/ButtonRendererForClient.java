@@ -10,14 +10,15 @@ import com.brahvim.androidgamecontroller.serial.config.ButtonConfig;
 
 import processing.core.PVector;
 
-public class ButtonRenderer extends ButtonRendererBase {
-    public ButtonRenderer(ButtonConfig p_config) {
+public class ButtonRendererForClient extends ButtonRendererBase {
+    public ButtonRendererForClient(ButtonConfig p_config) {
         super(p_config);
     }
 
     public void touchStarted() {
+        super.state.ppressed = super.state.pressed;
         this.recordTouch();
-        this.sendState();
+        this.sendStateIfChanged();
     }
 
     public void touchMoved() {
@@ -28,17 +29,26 @@ public class ButtonRenderer extends ButtonRendererBase {
         this.recordTouch();
 
         // If changes took place, send 'em over! ":D
-        if (super.state.ppressed != super.state.pressed)
-            this.sendState();
+        this.sendStateIfChanged();
     }
 
     public void touchReleased() {
+        super.state.ppressed = super.state.pressed;
         this.recordTouch();
-        this.sendState();
+        this.sendStateIfChanged();
     }
 
-    private void sendState() {
+    private void sendStateIfChanged() {
         super.state.configHash = super.config.hashCode();
+
+        // If the state didn't change, let's go back!:
+        if (super.state.ppressed == super.state.pressed)
+            return;
+
+        System.out.printf("Button `%s`'s state changed, sending it over...\n", super.config.text);
+        System.out.printf("It was previously %s pressed and is now %s pressed.\n",
+          super.state.ppressed? "" : "not",
+          super.state.pressed? "" : "not");
 
         Sketch.socket.send(ByteSerial.encode(super.state),
           Sketch.serverIp, RequestCode.SERVER_PORT);

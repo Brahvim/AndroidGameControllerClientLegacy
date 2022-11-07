@@ -4,7 +4,7 @@ import android.os.Build;
 import android.os.Process;
 
 import com.brahvim.androidgamecontroller.RequestCode;
-import com.brahvim.androidgamecontroller.client.clientrender.ButtonRenderer;
+import com.brahvim.androidgamecontroller.client.clientrender.ButtonRendererForClient;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
 import com.brahvim.androidgamecontroller.serial.config.ButtonConfig;
 import com.brahvim.androidgamecontroller.serial.config.ConfigurationPacket;
@@ -123,7 +123,7 @@ public class SketchWithScenes extends Sketch {
     };
 
     ClientScene workScene = new ClientScene() {
-        ArrayList<ButtonRenderer> buttonRenderers;
+        ArrayList<ButtonRendererForClient> buttonRenderers;
         //ArrayList<DpadButtonRenderer> dpadButtonRenderers;
         //ArrayList<ThumbstickRenderer> thumbstickRenderers;
         //ArrayList<TouchpadRenderer> touchpadRenderers;
@@ -152,23 +152,23 @@ public class SketchWithScenes extends Sketch {
 
             // region Making buttons!
             buttonRenderers.add(
-              new ButtonRenderer(configsToSend.addObject(
+              new ButtonRendererForClient(configsToSend.addObject(
                 new ButtonConfig(qx, q3y, "A"))
               ));
 
             buttonRenderers.add(
-              new ButtonRenderer(configsToSend.addObject(
+              new ButtonRendererForClient(configsToSend.addObject(
                 new ButtonConfig(q3x, q3y, "B"))
               ));
 
             buttonRenderers.add(
-              new ButtonRenderer(configsToSend.addObject(
+              new ButtonRendererForClient(configsToSend.addObject(
                 new ButtonConfig(cx, cy, "START"))
               ));
             // endregion
 
             System.out.println("Configuration hashes:");
-            for (ButtonRenderer r : buttonRenderers) {
+            for (ButtonRendererForClient r : buttonRenderers) {
                 System.out.println(r.configHash());
             }
 
@@ -181,9 +181,8 @@ public class SketchWithScenes extends Sketch {
         @Override
         public void draw() {
             background(0);
-
             if (buttonRenderers != null)
-                for (ButtonRenderer r : buttonRenderers) {
+                for (ButtonRendererForClient r : buttonRenderers) {
                     r.draw(g);
                 }
         }
@@ -191,7 +190,7 @@ public class SketchWithScenes extends Sketch {
         @Override
         public void touchStarted(TouchEvent p_touchEvent) {
             if (buttonRenderers != null)
-                for (ButtonRenderer r : buttonRenderers) {
+                for (ButtonRendererForClient r : buttonRenderers) {
                     r.touchStarted();
                 }
         }
@@ -199,7 +198,7 @@ public class SketchWithScenes extends Sketch {
         @Override
         public void touchMoved(TouchEvent p_touchEvent) {
             if (buttonRenderers != null)
-                for (ButtonRenderer r : buttonRenderers) {
+                for (ButtonRendererForClient r : buttonRenderers) {
                     r.touchMoved();
                 }
         }
@@ -207,7 +206,7 @@ public class SketchWithScenes extends Sketch {
         @Override
         public void touchEnded(TouchEvent p_touchEvent) {
             if (buttonRenderers != null)
-                for (ButtonRenderer r : buttonRenderers) {
+                for (ButtonRendererForClient r : buttonRenderers) {
                     r.touchReleased();
                 }
         }
