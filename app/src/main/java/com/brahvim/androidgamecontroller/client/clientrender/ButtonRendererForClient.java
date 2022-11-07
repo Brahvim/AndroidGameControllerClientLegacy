@@ -10,9 +10,10 @@ import com.brahvim.androidgamecontroller.serial.config.ButtonConfig;
 
 import processing.core.PVector;
 
-public class ButtonRendererForClient extends ButtonRendererBase {
+public class ButtonRendererForClient extends ButtonRendererBase implements ClientRenderer {
     public ButtonRendererForClient(ButtonConfig p_config) {
         super(p_config);
+        ClientRenderer.all.add(this);
     }
 
     public void touchStarted() {
@@ -32,7 +33,7 @@ public class ButtonRendererForClient extends ButtonRendererBase {
         this.sendStateIfChanged();
     }
 
-    public void touchReleased() {
+    public void touchEnded() {
         super.state.ppressed = super.state.pressed;
         this.recordTouch();
         this.sendStateIfChanged();

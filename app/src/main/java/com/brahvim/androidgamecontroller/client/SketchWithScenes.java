@@ -5,9 +5,13 @@ import android.os.Process;
 
 import com.brahvim.androidgamecontroller.RequestCode;
 import com.brahvim.androidgamecontroller.client.clientrender.ButtonRendererForClient;
+import com.brahvim.androidgamecontroller.client.clientrender.ClientRenderer;
+import com.brahvim.androidgamecontroller.client.clientrender.DpadButtonRendererForClient;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
+import com.brahvim.androidgamecontroller.serial.DpadDirection;
 import com.brahvim.androidgamecontroller.serial.config.ButtonConfig;
 import com.brahvim.androidgamecontroller.serial.config.ConfigurationPacket;
+import com.brahvim.androidgamecontroller.serial.config.DpadButtonConfig;
 
 import java.util.ArrayList;
 
@@ -124,7 +128,7 @@ public class SketchWithScenes extends Sketch {
 
     ClientScene workScene = new ClientScene() {
         ArrayList<ButtonRendererForClient> buttonRenderers;
-        //ArrayList<DpadButtonRenderer> dpadButtonRenderers;
+        ArrayList<DpadButtonRendererForClient> dpadButtonRenderers;
         //ArrayList<ThumbstickRenderer> thumbstickRenderers;
         //ArrayList<TouchpadRenderer> touchpadRenderers;
 
@@ -136,7 +140,7 @@ public class SketchWithScenes extends Sketch {
 
             ConfigurationPacket configsToSend = new ConfigurationPacket();
 
-            // region Preparing the packet.
+            // region Preparing the configuration packet.
             configsToSend.AGC_VERSION = RequestCode.CLIENT_CURRENT_VERSION;
             configsToSend.appStartMilliSinceEpoch =
               System.currentTimeMillis() - MainActivity.sketch.millis();
@@ -149,23 +153,42 @@ public class SketchWithScenes extends Sketch {
             // endregion
 
             buttonRenderers = new ArrayList<>();
+            dpadButtonRenderers = new ArrayList<>();
 
             // region Making buttons!
             buttonRenderers.add(
               new ButtonRendererForClient(configsToSend.addObject(
-                new ButtonConfig(qx, q3y, "A"))
+                new ButtonConfig(
+                  new PVector(q3x - 90, q3y + 50),
+                  new PVector(150, 150),
+                  "A"))
               ));
 
             buttonRenderers.add(
               new ButtonRendererForClient(configsToSend.addObject(
-                new ButtonConfig(q3x, q3y, "B"))
-              ));
-
-            buttonRenderers.add(
-              new ButtonRendererForClient(configsToSend.addObject(
-                new ButtonConfig(cx, cy, "START"))
+                new ButtonConfig(
+                  new PVector(q3x + 90, q3y + 50),
+                  new PVector(150, 150),
+                  "B"))
               ));
             // endregion
+
+            // region Making DPAD buttons!
+            dpadButtonRenderers.add(new DpadButtonRendererForClient(
+              new DpadButtonConfig(
+                new PVector(qx - 80, q3y),
+                new PVector(100, 100),
+                DpadDirection.LEFT)
+            ));
+
+            dpadButtonRenderers.add(new DpadButtonRendererForClient(
+              new DpadButtonConfig(
+                new PVector(qx + 80, q3y),
+                new PVector(100, 100),
+                DpadDirection.RIGHT)
+            ));
+            // endregion
+
 
             System.out.println("Configuration hashes:");
             for (ButtonRendererForClient r : buttonRenderers) {
@@ -181,34 +204,31 @@ public class SketchWithScenes extends Sketch {
         @Override
         public void draw() {
             background(0);
-            if (buttonRenderers != null)
-                for (ButtonRendererForClient r : buttonRenderers) {
-                    r.draw(g);
-                }
+
+            if (ClientRenderer.all != null)
+                for (int i = 0; i < ClientRenderer.all.size(); i++)
+                    ClientRenderer.all.get(i).draw(g);
         }
 
         @Override
         public void touchStarted(TouchEvent p_touchEvent) {
-            if (buttonRenderers != null)
-                for (ButtonRendererForClient r : buttonRenderers) {
-                    r.touchStarted();
-                }
+            if (ClientRenderer.all != null)
+                for (int i = 0; i < ClientRenderer.all.size(); i++)
+                    ClientRenderer.all.get(i).touchStarted();
         }
 
         @Override
         public void touchMoved(TouchEvent p_touchEvent) {
-            if (buttonRenderers != null)
-                for (ButtonRendererForClient r : buttonRenderers) {
-                    r.touchMoved();
-                }
+            if (ClientRenderer.all != null)
+                for (int i = 0; i < ClientRenderer.all.size(); i++)
+                    ClientRenderer.all.get(i).touchMoved();
         }
 
         @Override
         public void touchEnded(TouchEvent p_touchEvent) {
-            if (buttonRenderers != null)
-                for (ButtonRendererForClient r : buttonRenderers) {
-                    r.touchReleased();
-                }
+            if (ClientRenderer.all != null)
+                for (int i = 0; i < ClientRenderer.all.size(); i++)
+                    ClientRenderer.all.get(i).touchEnded();
         }
 
         @Override
