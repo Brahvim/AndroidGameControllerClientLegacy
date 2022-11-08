@@ -14,12 +14,77 @@ import processing.core.PGraphics;
 import processing.core.PVector;
 
 public class DpadButtonRendererForClient extends DpadButtonRendererBase implements ClientRenderer {
+    CollisionCheckFunction colFxn;
+
+    interface CollisionCheckFunction {
+        boolean check(PVector p_touch, PVector p_scale, PVector p_transform);
+    }
 
     public DpadButtonRendererForClient(DpadButtonConfig p_config) {
         super(p_config);
         ClientRenderer.all.add(this);
+
+        switch (super.config.dir) {
+            case UP:
+                this.colFxn = new CollisionCheckFunction() {
+                    @Override
+                    public boolean check(PVector p_touch, PVector p_scale, PVector p_transform) {
+                        return CollisionAlgorithms
+                          .ptRect(p_touch.x, p_touch.y,
+                            p_transform.x - (p_scale.x * 0.5f),
+                            p_transform.y - (p_scale.y * 0.5f),
+                            p_transform.x + (p_scale.x * 0.5f),
+                            p_transform.y + (p_scale.y * 0.5f));
+                    }
+                };
+                break;
+
+            case LEFT:
+                this.colFxn = new CollisionCheckFunction() {
+                    @Override
+                    public boolean check(PVector p_touch, PVector p_scale, PVector p_transform) {
+                        return CollisionAlgorithms
+                          .ptRect(p_touch.x, p_touch.y,
+                            p_transform.x - (p_scale.x * 0.5f),
+                            p_transform.y - (p_scale.y * 0.5f),
+                            p_transform.x + (p_scale.x * 0.5f),
+                            p_transform.y + (p_scale.y * 0.5f));
+                    }
+                };
+                break;
+
+            case DOWN:
+                this.colFxn = new CollisionCheckFunction() {
+                    @Override
+                    public boolean check(PVector p_touch, PVector p_scale, PVector p_transform) {
+                        return CollisionAlgorithms
+                          .ptRect(p_touch.x, p_touch.y,
+                            p_transform.x - (p_scale.x * 0.5f),
+                            p_transform.y - (p_scale.y * 0.5f),
+                            p_transform.x + (p_scale.x * 0.5f),
+                            p_transform.y + (p_scale.y * 0.5f));
+                    }
+                };
+                break;
+
+            case RIGHT:
+                this.colFxn = new CollisionCheckFunction() {
+                    @Override
+                    public boolean check(PVector p_touch, PVector p_scale, PVector p_transform) {
+                        return CollisionAlgorithms
+                          .ptRect(p_touch.x, p_touch.y,
+                            p_transform.x - (p_scale.x * 0.5f), // Opposite direction remains same,
+                            p_transform.y - (p_scale.y * 0.75f),
+                            p_transform.x + p_scale.x, // The direction gets no extra.
+                            p_transform.y + (p_scale.y * 0.75f));
+                    }
+                };
+                break;
+        }
     }
 
+
+    // region Touch events.
     public void touchStarted() {
         this.state.ppressed = this.state.pressed;
         this.recordTouch();
@@ -43,6 +108,8 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
         this.sendStateIfChanged();
     }
 
+// endregion
+
     private void sendStateIfChanged() {
         this.state.controlNumber = this.config.controlNumber;
 
@@ -64,16 +131,7 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
         this.state.pressed = false;
 
         for (PVector v : Sketch.listUnprojectedTouches) {
-            PVector transform = super.config.transform,
-              scale = super.config.scale;
-
-            super.state.pressed = CollisionAlgorithms
-              .ptRect(v.x, v.y,
-                transform.x - (scale.x * 0.5f),
-                transform.y - (scale.y * 0.5f),
-                transform.x + (scale.x * 0.5f),
-                transform.y + (scale.y * 0.5f));
-
+            super.state.pressed = this.colFxn.check(v, super.config.scale, super.config.transform);
             if (this.state.pressed)
                 break;
         }
@@ -102,9 +160,9 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
                 p_graphics.rotate(PConstants.HALF_PI);
                 break;
 
-            // No rotation. It's already pointing up, ":D!
-            // case UP:
-            // break;
+// No rotation. It's already pointing up, ":D!
+// case UP:
+// break;
 
             default:
                 break;

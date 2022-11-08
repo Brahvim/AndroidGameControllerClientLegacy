@@ -45,7 +45,11 @@ public class ThumbstickRendererForClient extends ThumbstickRendererBase implemen
               super.config.scale.x)) {
                 if (!measureOnlyDir) {
                     super.state.pressed = true;
-                    super.draggingTouch.set(v);
+
+                    synchronized (super.draggingTouch) {
+                        super.draggingTouch.set(v);
+                    }
+
                     super.state.mag = v.magSq();
                 }
 
