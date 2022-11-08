@@ -24,6 +24,7 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
         super(p_config);
         ClientRenderer.all.add(this);
 
+        // Select a `colFxn`:
         switch (super.config.dir) {
             case UP:
                 this.colFxn = new CollisionCheckFunction() {
@@ -31,8 +32,8 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
                     public boolean check(PVector p_touch, PVector p_scale, PVector p_transform) {
                         return CollisionAlgorithms
                           .ptRect(p_touch.x, p_touch.y,
-                            p_transform.x - (p_scale.x * 0.5f),
-                            p_transform.y - (p_scale.y * 0.5f),
+                            p_transform.x - (p_scale.x * 0.75f),
+                            p_transform.y - p_scale.y,
                             p_transform.x + (p_scale.x * 0.5f),
                             p_transform.y + (p_scale.y * 0.5f));
                     }
@@ -45,10 +46,10 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
                     public boolean check(PVector p_touch, PVector p_scale, PVector p_transform) {
                         return CollisionAlgorithms
                           .ptRect(p_touch.x, p_touch.y,
-                            p_transform.x - (p_scale.x * 0.5f),
-                            p_transform.y - (p_scale.y * 0.5f),
-                            p_transform.x + (p_scale.x * 0.5f),
-                            p_transform.y + (p_scale.y * 0.5f));
+                            p_transform.x - (p_scale.x * 1.25f),
+                            p_transform.y - (p_scale.y * 0.75f),
+                            p_transform.x + (p_scale.x * 0.3825f),
+                            p_transform.y + (p_scale.y * 0.75f));
                     }
                 };
                 break;
@@ -59,10 +60,10 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
                     public boolean check(PVector p_touch, PVector p_scale, PVector p_transform) {
                         return CollisionAlgorithms
                           .ptRect(p_touch.x, p_touch.y,
-                            p_transform.x - (p_scale.x * 0.5f),
+                            p_transform.x - (p_scale.x * 0.75f),
                             p_transform.y - (p_scale.y * 0.5f),
                             p_transform.x + (p_scale.x * 0.5f),
-                            p_transform.y + (p_scale.y * 0.5f));
+                            p_transform.y + p_scale.y);
                     }
                 };
                 break;
@@ -73,9 +74,9 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
                     public boolean check(PVector p_touch, PVector p_scale, PVector p_transform) {
                         return CollisionAlgorithms
                           .ptRect(p_touch.x, p_touch.y,
-                            p_transform.x - (p_scale.x * 0.5f), // Opposite direction remains same,
+                            p_transform.x - (p_scale.x * 0.75f),
                             p_transform.y - (p_scale.y * 0.75f),
-                            p_transform.x + p_scale.x, // The direction gets no extra.
+                            p_transform.x + p_scale.x,
                             p_transform.y + (p_scale.y * 0.75f));
                     }
                 };
@@ -149,7 +150,7 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
 
         switch (this.config.dir) {
             case DOWN:
-                p_graphics.rotate(PConstants.TAU);
+                p_graphics.scale(-1);
                 break;
 
             case LEFT:

@@ -54,8 +54,8 @@ public class TouchpadRenderForClient extends TouchpadRendererBase implements Cli
             // Yeah, weird numbering here... kinda' cursed.
             isTouching =
               CollisionAlgorithms.ptRect(v.x, v.y,
-                transform.x - (scale.x * 0.5f),
-                transform.y - (scale.y * 0.25f),
+                transform.x - (scale.x * 0.625f),
+                transform.y - (scale.y * 0.28125f),
                 transform.x + (scale.x * 0.75f),
                 transform.y + (scale.y * 0.25f));
 

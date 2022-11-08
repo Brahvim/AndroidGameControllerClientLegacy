@@ -206,8 +206,7 @@ public class SketchWithScenes extends Sketch {
               new TouchpadRenderForClient(
                 configsToSend.addObject(
                   new TouchpadConfig(
-                    //new PVector(600, 800),
-                    new PVector(300, 400),
+                    new PVector(600, 800),
                     new PVector(q3x, qy)
                   ))));
             // endregion
@@ -236,6 +235,8 @@ public class SketchWithScenes extends Sketch {
         @Override
         public void draw() {
             background(0);
+
+            System.out.printf("Framerate: `%d`.\n:", (int)frameRate);
 
             if (ClientRenderer.all != null)
                 for (int i = 0; i < ClientRenderer.all.size(); i++)
