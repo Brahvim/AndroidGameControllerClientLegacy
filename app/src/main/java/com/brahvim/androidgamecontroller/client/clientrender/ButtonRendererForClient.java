@@ -47,9 +47,9 @@ public class ButtonRendererForClient extends ButtonRendererBase implements Clien
             return;
 
         System.out.printf("Button `%s`'s state changed, sending it over...\n", super.config.text);
-        System.out.printf("It was previously %s pressed and is now %spressed.\n",
-          super.state.ppressed? "" : "not ",
-          super.state.pressed? "" : "not ");
+        //System.out.printf("It was previously %s pressed and is now %spressed.\n",
+        //super.state.ppressed? "" : "not ",
+        //super.state.pressed? "" : "not ");
 
         Sketch.socket.send(ByteSerial.encode(super.state),
           Sketch.serverIp, RequestCode.SERVER_PORT);

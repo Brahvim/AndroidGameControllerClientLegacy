@@ -7,14 +7,19 @@ import com.brahvim.androidgamecontroller.RequestCode;
 import com.brahvim.androidgamecontroller.client.clientrender.ButtonRendererForClient;
 import com.brahvim.androidgamecontroller.client.clientrender.ClientRenderer;
 import com.brahvim.androidgamecontroller.client.clientrender.DpadButtonRendererForClient;
+import com.brahvim.androidgamecontroller.client.clientrender.ThumbstickRendererForClient;
+import com.brahvim.androidgamecontroller.client.clientrender.TouchpadRenderForClient;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
 import com.brahvim.androidgamecontroller.serial.DpadDirection;
 import com.brahvim.androidgamecontroller.serial.config.ButtonConfig;
 import com.brahvim.androidgamecontroller.serial.config.ConfigurationPacket;
 import com.brahvim.androidgamecontroller.serial.config.DpadButtonConfig;
+import com.brahvim.androidgamecontroller.serial.config.ThumbstickConfig;
+import com.brahvim.androidgamecontroller.serial.config.TouchpadConfig;
 
 import java.util.ArrayList;
 
+import processing.core.PConstants;
 import processing.core.PVector;
 import processing.event.TouchEvent;
 
@@ -22,7 +27,7 @@ public class SketchWithScenes extends Sketch {
     public final String BROADCAST_ADDRESS = "255.255.255.255"; //getBroadAddr();
 
     void appStart() {
-        ClientScene.setScene(loadScene);
+        ClientScene.setScene(workScene);
     }
 
     ClientScene loadScene = new ClientScene() {
@@ -129,8 +134,8 @@ public class SketchWithScenes extends Sketch {
     ClientScene workScene = new ClientScene() {
         ArrayList<ButtonRendererForClient> buttonRenderers;
         ArrayList<DpadButtonRendererForClient> dpadButtonRenderers;
-        //ArrayList<ThumbstickRendererForClient> thumbstickRenderers;
-        //ArrayList<TouchpadRendererForClient> touchpadRenderers;
+        ArrayList<TouchpadRenderForClient> touchpadRenderers;
+        ArrayList<ThumbstickRendererForClient> thumbstickRenderers;
 
         @Override
         public void setup() {
@@ -152,8 +157,12 @@ public class SketchWithScenes extends Sketch {
             configsToSend.touchpads = new ArrayList<>();
             // endregion
 
+            // region Makin' `ArrayList`s!
             buttonRenderers = new ArrayList<>();
             dpadButtonRenderers = new ArrayList<>();
+            touchpadRenderers = new ArrayList<>();
+            thumbstickRenderers = new ArrayList<>();
+            // endregion
 
             // Don't forget `configsToSend.addObject()` when making new configurations!
 
@@ -192,10 +201,29 @@ public class SketchWithScenes extends Sketch {
             ));
             // endregion
 
+            // region A touchpad!
+            touchpadRenderers.add(
+              new TouchpadRenderForClient(
+                configsToSend.addObject(
+                  new TouchpadConfig(
+                    //new PVector(600, 800),
+                    new PVector(300, 400),
+                    new PVector(q3x, qy)
+                  ))));
+            // endregion
 
-            System.out.println("Configuration hashes:");
+            // region A thumbstick too! ...yeah, I gotta test things out, sorry...
+            thumbstickRenderers.add(new ThumbstickRendererForClient(
+              configsToSend.addObject(new ThumbstickConfig(
+                new PVector(80, 80),
+                new PVector(qx, qy)
+              ))
+            ));
+            // endregion
+
+            System.out.println("Configuration-to-state mapping numbers:");
             for (ButtonRendererForClient r : buttonRenderers) {
-                System.out.println(r.configHash());
+                System.out.println(r.config.controlNumber);
             }
 
             Sketch.MY_CONFIG = configsToSend;
@@ -271,6 +299,26 @@ public class SketchWithScenes extends Sketch {
             completeExit();
         }
     };
+
+    // region `backgroundWithAlpha()` overloads.
+    void backgroundWithAlpha(float p_grey, float p_alpha) {
+        backgroundWithAlpha(p_grey, p_grey, p_grey, p_alpha);
+    }
+
+    void backgroundWithAlpha(float p_red, float p_green, float p_blue, float p_alpha) {
+        pushMatrix();
+        pushStyle();
+        hint(PConstants.DISABLE_DEPTH_TEST);
+
+        rectMode(CORNER);
+        fill(p_red, p_green, p_blue, p_alpha);
+        rect(0, 0, width, height);
+
+        hint(PConstants.ENABLE_DEPTH_TEST);
+        pushStyle();
+        popMatrix();
+    }
+    // endregion
 
     // region Stuff that helps AGC exit.
     void quickExitIfCan() {

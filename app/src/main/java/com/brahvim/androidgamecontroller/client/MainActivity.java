@@ -28,46 +28,43 @@ public class MainActivity extends AppCompatActivity {
         return MainActivity.appAct.getApplicationContext();
     }
 
+    public void keepScreenOn(boolean p_status) {
+        if (p_status)
+            this.getWindow().addFlags(
+              android.view.WindowManager
+                .LayoutParams.FLAG_KEEP_SCREEN_ON);
+        else
+            this.getWindow().clearFlags(
+              android.view.WindowManager
+                .LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
     // region "Processing defaults".
     @Override
     // Let this one remain `protected`. DON'T RESTART DA APP! WAAAH!
     protected void onCreate(Bundle p_savedInstanceState) {
         super.onCreate(p_savedInstanceState);
 
-
         // Thanks to the Fisica library's "AndroidCanica" example!:
         // Fix to prevent screen from
         // sleeping when app is active:
-        this.getWindow().addFlags(
-          android.view.WindowManager
-            .LayoutParams.FLAG_KEEP_SCREEN_ON);
+        //this.whateverTurnItOn(true); // Let's not do it right now, okay?
+
+        // Remove the flag when AGC is disconnected or something! Waaah! Battery life!!!
 
         // NEVER do this in actual networking apps! AGC is snappy since it is on LAN...
 
-        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().
+        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitAll().build());
 
-          permitAll().
-
-          build());
-
-        MainActivity.frame = new
-
-          FrameLayout(this);
+        MainActivity.frame = new FrameLayout(this);
         MainActivity.frame.setId(CompatUtils.getUniqueViewId());
-        super.
+        super.setContentView(MainActivity.frame,
+          new ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT));
 
-          setContentView(MainActivity.frame,
-            new ViewGroup.LayoutParams(
-              ViewGroup.LayoutParams.MATCH_PARENT,
-              ViewGroup.LayoutParams.MATCH_PARENT));
-
-        MainActivity.sketch = new
-
-          SketchWithScenes();
-
-        MainActivity.fragment = new
-
-          PFragment(MainActivity.sketch);
+        MainActivity.sketch = new SketchWithScenes();
+        MainActivity.fragment = new PFragment(MainActivity.sketch);
         MainActivity.fragment.setView(MainActivity.frame, this);
         MainActivity.appAct = this;
 
@@ -90,12 +87,13 @@ public class MainActivity extends AppCompatActivity {
         if (sketch != null)
             sketch.onNewIntent(p_intent);
     }
-    // endregion
+// endregion
 
-    // region Android activity lifecycle events (PASSED STRAIGHT TO `ClientScene`s! NULL
-    // CHECKS!11!):
-    // I call the super class's methods LATER so I can do my own work first:
+    // Android activity lifecycle events
+    // (PASSED STRAIGHT TO `ClientScene`s! with NULL CHECKS!11!)
+    // (I would've called super class methods LATER so I could do my own work first...):
 
+    // region
     @Override
     public void onBackPressed() {
         //super.onBackPressed(); // Interference!
