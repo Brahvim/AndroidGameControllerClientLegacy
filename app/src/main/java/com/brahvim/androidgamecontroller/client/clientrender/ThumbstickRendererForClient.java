@@ -8,6 +8,7 @@ import com.brahvim.androidgamecontroller.serial.ByteSerial;
 import com.brahvim.androidgamecontroller.serial.config.ThumbstickConfig;
 
 import processing.core.PVector;
+import processing.event.TouchEvent;
 
 public class ThumbstickRendererForClient extends ThumbstickRendererBase implements ClientRenderer {
     public ThumbstickRendererForClient(ThumbstickConfig p_config) {
@@ -77,4 +78,16 @@ public class ThumbstickRendererForClient extends ThumbstickRendererBase implemen
           Sketch.serverIp, RequestCode.SERVER_PORT);
     }
 
+    // Not using `PVector.equals()` since the `z` may not always match.
+    // ...what if you compare it with the touches from the previous frame,
+    // ..before which you changed the camera or projection matrices? ;)
+    public boolean isDraggingTouch(PVector p_vector) {
+        return this.draggingTouch.x == p_vector.x
+          && this.draggingTouch.y == p_vector.y;
+    }
+
+    public boolean isDraggingTouch(TouchEvent.Pointer p_pointer) {
+        return this.draggingTouch.x == p_pointer.x
+          && this.draggingTouch.y == p_pointer.y;
+    }
 }

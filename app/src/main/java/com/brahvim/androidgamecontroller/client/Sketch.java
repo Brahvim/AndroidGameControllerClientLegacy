@@ -1,7 +1,7 @@
 package com.brahvim.androidgamecontroller.client;
 
 import com.brahvim.androidgamecontroller.RequestCode;
-import com.brahvim.androidgamecontroller.serial.config.ConfigurationPacket;
+import com.brahvim.androidgamecontroller.serial.config.AgcConfigurationPacket;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -22,7 +22,7 @@ public class Sketch extends PApplet {
     public static AgcClientSocket socket;
     public static String serverIp;
     public boolean inSession; // Is the client sending the server data already?
-    public static ConfigurationPacket MY_CONFIG;
+    public static AgcConfigurationPacket MY_CONFIG;
     // endregion
 
     // region Boilerplate-y stuff.
@@ -32,7 +32,7 @@ public class Sketch extends PApplet {
     public float frameStartTime, pframeTime, frameTime;
     public static PFont DEFAULT_FONT;
     public static final float DEFAULT_FONT_SIZE = 72;
-    public float cx, cy, qx, qy, q3x, q3y, scr, fov = PI / 3;
+    public static float cx, cy, qx, qy, q3x, q3y, scr, fov = PI / 3;
     public PVector cameraPos, cameraCenter, cameraUp;
     // endregion
     // endregion
@@ -41,6 +41,10 @@ public class Sketch extends PApplet {
     @Override
     public void settings() {
         fullScreen(P3D);
+    }
+
+    public static void main(String[] args) {
+        System.out.println("Android is SO broken...");
     }
 
     @Override
@@ -96,8 +100,8 @@ public class Sketch extends PApplet {
 
         for (int i = 0; i < touches.length; i++) {
             PVector u = new PVector(touches[i].x, touches[i].y);
-            u = MainActivity.sketch.glGraphics.modelviewInv.mult(u, null);
             u = MainActivity.sketch.glGraphics.cameraInv.mult(u, null);
+            u = MainActivity.sketch.glGraphics.modelviewInv.mult(u, null);
             u.sub(MainActivity.sketch.width, MainActivity.sketch.height);
             Sketch.listUnprojectedTouches.add(u);
         }
@@ -115,9 +119,16 @@ public class Sketch extends PApplet {
                 Unprojector.gluUnProject(
                   p.x, MainActivity.sketch.height - p.y, 0, u);
             Sketch.listUnprojectedTouches.add(u);
+            u.sub(Sketch.cx, Sketch.cy);
+        }
+
+        System.out.println("Unprojected touches:");
+
+        for (PVector v : Sketch.listUnprojectedTouches) {
+            System.out.println(v);
         }
     }
-    */
+     */
     // endregion
 
     @Override

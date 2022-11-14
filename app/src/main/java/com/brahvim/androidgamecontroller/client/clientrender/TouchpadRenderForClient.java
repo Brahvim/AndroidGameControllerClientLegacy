@@ -63,6 +63,10 @@ public class TouchpadRenderForClient extends TouchpadRendererBase implements Cli
                 super.state.pressed = isTouching;
                 recordedState = true;
             }
+
+            if (isTouching) {
+                super.state.touches.add(v);
+            }
         }
 
         this.state.pressed &= MainActivity.sketch.mousePressed;

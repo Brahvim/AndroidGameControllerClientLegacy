@@ -11,8 +11,8 @@ import com.brahvim.androidgamecontroller.client.clientrender.ThumbstickRendererF
 import com.brahvim.androidgamecontroller.client.clientrender.TouchpadRenderForClient;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
 import com.brahvim.androidgamecontroller.serial.DpadDirection;
+import com.brahvim.androidgamecontroller.serial.config.AgcConfigurationPacket;
 import com.brahvim.androidgamecontroller.serial.config.ButtonConfig;
-import com.brahvim.androidgamecontroller.serial.config.ConfigurationPacket;
 import com.brahvim.androidgamecontroller.serial.config.DpadButtonConfig;
 import com.brahvim.androidgamecontroller.serial.config.ThumbstickConfig;
 import com.brahvim.androidgamecontroller.serial.config.TouchpadConfig;
@@ -27,7 +27,7 @@ public class SketchWithScenes extends Sketch {
     public final String BROADCAST_ADDRESS = "255.255.255.255"; //getBroadAddr();
 
     void appStart() {
-        ClientScene.setScene(workScene);
+        ClientScene.setScene(loadScene);
     }
 
     ClientScene loadScene = new ClientScene() {
@@ -143,7 +143,7 @@ public class SketchWithScenes extends Sketch {
             frameRate(1000);
             textSize(Sketch.DEFAULT_FONT_SIZE);
 
-            ConfigurationPacket configsToSend = new ConfigurationPacket();
+            AgcConfigurationPacket configsToSend = new AgcConfigurationPacket();
 
             // region Preparing the configuration packet.
             configsToSend.AGC_VERSION = RequestCode.CLIENT_CURRENT_VERSION;
@@ -236,7 +236,7 @@ public class SketchWithScenes extends Sketch {
         public void draw() {
             background(0);
 
-            System.out.printf("Framerate: `%d`.\n:", (int)frameRate);
+            System.out.printf("Framerate: `%d`.\n", (int)frameRate);
 
             if (ClientRenderer.all != null)
                 for (int i = 0; i < ClientRenderer.all.size(); i++)
