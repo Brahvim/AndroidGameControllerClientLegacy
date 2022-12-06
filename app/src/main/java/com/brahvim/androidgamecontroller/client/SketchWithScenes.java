@@ -32,29 +32,68 @@ public class SketchWithScenes extends Sketch {
 
     Scene loadScene = new Scene() {
         final int ADD_ME_REQUEST_INTERVAL = 4;
-        final SineWave welcomeTextWave = new SineWave(MainActivity.sketch),
-          searchTextWave = new SineWave(MainActivity.sketch);
+        SineWave welcomeTextWave, searchTextWave, hotspotTextWave;
 
         @Override
         public void setup() {
             frameRate(Sketch.refreshRate);
 
-            welcomeTextWave.start(new Runnable() {
-                @Override
-                public void run() {
-                    //
-                }
-            });
+            welcomeTextWave = new SineWave(MainActivity.sketch, 0.001f);
+            searchTextWave = new SineWave(MainActivity.sketch, 0.003f);
+            hotspotTextWave = new SineWave(MainActivity.sketch, 0.001f);
 
-            searchTextWave.start(new Runnable() {
+            this.welcomeTextWave.endWhenAngleIs(90);
+            this.hotspotTextWave.endWhenAngleIs(90);
+
+            this.welcomeTextWave.start(new Runnable() {
                 @Override
                 public void run() {
-                    //
+                    hotspotTextWave.start();
+                    searchTextWave.start();
                 }
             });
+        }
+
+        @Override
+        public void draw() {
+            background(0);
+
+            // region Connection stuff!
+            ArrayList<String> possibleServers = getNetworks();
+            boolean noServers = possibleServers == null,
+
+              // If they're pressing on the screen, it means that
+              // they want to search on their WiFi hotspot instead.
+              // ..that's probably going to be only me!
+              hotspotMode = touches.length > 0 && !noServers;
+
+            if (frameCount % ADD_ME_REQUEST_INTERVAL == 0)
+                sendAddMeRequest(hotspotMode, noServers, possibleServers);
+            // endregion
+
+            // region Rendering!
+            textSize(72);
+            float welcomeTextWave = this.welcomeTextWave.get();
+            fill(255, welcomeTextWave * 255);
+            text("Welcome to AndroidGameController.", cx, cy - (welcomeTextWave * qy));
+
+            textSize(12);
+            fill(255, this.hotspotTextWave.get() * 255);
+            text("Hold a finger onto the screen for using mobile hotspot for the scan instead.",
+              cx, cy);
+
+            textSize(48);
+            fill(255, this.searchTextWave.get() * 255);
+            text("Searching your network for servers".concat(hotspotMode?
+                "\n...on your mobile hotspot." : "...")
+              , cx, cy);
+
+            // endregion
 
         }
 
+
+        /*
         @Override
         public void draw() {
             background(0);
@@ -73,6 +112,7 @@ public class SketchWithScenes extends Sketch {
             // Rendering!:
             fill(255);
 
+            // region
             if (hotspotMode) {
                 textSize(Sketch.DEFAULT_FONT_SIZE * 1.5f);
                 float gap1 = textAscent() - textDescent() * 12;
@@ -100,6 +140,7 @@ public class SketchWithScenes extends Sketch {
 
             } // End of `hotspotMode` check.
         } // End of `loadScene.draw()`.
+        */
 
         @Override
         public void onReceive(byte[] p_data, String p_ip, int p_port) {
