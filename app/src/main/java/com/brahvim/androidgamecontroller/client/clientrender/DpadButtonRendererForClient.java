@@ -136,7 +136,7 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
     private void recordTouch() {
         this.state.pressed = false;
 
-        for (PVector v : Sketch.listUnprojectedTouches) {
+        for (PVector v : Sketch.listOfUnprojectedTouches) {
             super.state.pressed = this.colFxn.check(v, super.config.scale, super.config.transform);
             if (this.state.pressed)
                 break;

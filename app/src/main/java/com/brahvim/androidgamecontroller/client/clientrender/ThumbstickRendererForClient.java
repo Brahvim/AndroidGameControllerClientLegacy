@@ -21,7 +21,7 @@ public class ThumbstickRendererForClient extends ThumbstickRendererBase implemen
     private void recordTouch() {
         boolean measureOnlyDir = false;
 
-        for (PVector v : Sketch.listUnprojectedTouches) {
+        for (PVector v : Sketch.listOfUnprojectedTouches) {
             if (CollisionAlgorithms.ptCircle(
               v, super.config.transform,
               // Whadda' I do then? Take an average? No! Please! No Ellipses!

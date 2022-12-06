@@ -1,7 +1,6 @@
 package com.brahvim.androidgamecontroller.client;
 
 import com.brahvim.androidgamecontroller.RequestCode;
-import com.brahvim.androidgamecontroller.serial.configs.AgcConfigurationPacket;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -22,11 +21,10 @@ public class Sketch extends PApplet {
     public static AgcClientSocket socket;
     public static String serverIp;
     public boolean inSession; // Is the client sending the server data already?
-    public static AgcConfigurationPacket MY_CONFIG;
     // endregion
 
     // region Boilerplate-y stuff.
-    public static final ArrayList<PVector> listUnprojectedTouches = new ArrayList<>(10);
+    public static final ArrayList<PVector> listOfUnprojectedTouches = new ArrayList<>(10);
     // ^^^ Funny how `ArrayList`s have a capacity of `10` by default, haha.
     public PGraphicsOpenGL glGraphics;
     public float frameStartTime, pframeTime, frameTime;
@@ -95,7 +93,7 @@ public class Sketch extends PApplet {
     }
 
     public static void unprojectTouches() {
-        Sketch.listUnprojectedTouches.clear();
+        Sketch.listOfUnprojectedTouches.clear();
         TouchEvent.Pointer[] touches = MainActivity.sketch.touches;
 
         for (int i = 0; i < touches.length; i++) {
@@ -103,14 +101,14 @@ public class Sketch extends PApplet {
             u = MainActivity.sketch.glGraphics.cameraInv.mult(u, null);
             u = MainActivity.sketch.glGraphics.modelviewInv.mult(u, null);
             u.sub(MainActivity.sketch.width, MainActivity.sketch.height);
-            Sketch.listUnprojectedTouches.add(u);
+            Sketch.listOfUnprojectedTouches.add(u);
         }
     }
 
     /*
     public static void unprojectTouches() {
         Unprojector.captureViewMatrix((PGraphics3D)MainActivity.sketch.g);
-        Sketch.listUnprojectedTouches.clear();
+        Sketch.listOfUnprojectedTouches.clear();
 
         for (int i = 0; i < MainActivity.sketch.touches.length; i++) {
             TouchEvent.Pointer p = MainActivity.sketch.touches[i];
@@ -118,13 +116,13 @@ public class Sketch extends PApplet {
             if (p != null)
                 Unprojector.gluUnProject(
                   p.x, MainActivity.sketch.height - p.y, 0, u);
-            Sketch.listUnprojectedTouches.add(u);
+            Sketch.listOfUnprojectedTouches.add(u);
             u.sub(Sketch.cx, Sketch.cy);
         }
 
         System.out.println("Unprojected touches:");
 
-        for (PVector v : Sketch.listUnprojectedTouches) {
+        for (PVector v : Sketch.listOfUnprojectedTouches) {
             System.out.println(v);
         }
     }
@@ -214,12 +212,15 @@ public class Sketch extends PApplet {
     // endregion
 
     // region Event callbacks.
-    // region Mouse events.
+    // region Mouse events (they are literally detected before touch ones!).
     public void mousePressed() {
+        System.out.println("Sketch.mousePressed");
         Scene.getCurrentScene().mousePressed();
     }
 
+    // Never called by Processing!:
     public void mouseMoved() {
+        System.out.println("Sketch.mouseMoved");
         Scene.getCurrentScene().mouseMoved();
     }
 
@@ -228,7 +229,9 @@ public class Sketch extends PApplet {
         Scene.getCurrentScene().mouseWheel(p_mouseEvent);
     }
 
+    // ...also never called:
     public void mouseClicked() {
+        System.out.println("Sketch.mouseClicked");
         Scene.getCurrentScene().mouseClicked();
     }
 
@@ -237,6 +240,7 @@ public class Sketch extends PApplet {
     }
 
     public void mouseReleased() {
+        System.out.println("Sketch.mouseReleased");
         Scene.getCurrentScene().mouseReleased();
     }
     // endregion
@@ -255,7 +259,7 @@ public class Sketch extends PApplet {
     }
     // endregion
 
-    // region Touch events (Andorid only, of course!).
+    // region Touch events (Android only, of course!).
     @Override
     public void touchStarted(TouchEvent p_touchEvent) {
         Sketch.unprojectTouches();
@@ -264,12 +268,14 @@ public class Sketch extends PApplet {
 
     @Override
     public void touchMoved(processing.event.TouchEvent p_touchEvent) {
+        System.out.println("Sketch.touchMoved");
         Sketch.unprojectTouches();
         Scene.getCurrentScene().touchMoved(p_touchEvent);
     }
 
     @Override
     public void touchEnded(processing.event.TouchEvent p_touchEvent) {
+        System.out.println("Sketch.touchEnded");
         Sketch.unprojectTouches();
         Scene.getCurrentScene().touchEnded(p_touchEvent);
     }

@@ -135,6 +135,8 @@ public class SketchWithScenes extends Sketch {
     };
 
     Scene workScene = new Scene() {
+        AgcConfigurationPacket config;
+
         ArrayList<ButtonRendererForClient> buttonRenderers;
         ArrayList<DpadButtonRendererForClient> dpadButtonRenderers;
         ArrayList<TouchpadRenderForClient> touchpadRenderers;
@@ -146,19 +148,19 @@ public class SketchWithScenes extends Sketch {
             frameRate(1000);
             textSize(Sketch.DEFAULT_FONT_SIZE);
 
-            AgcConfigurationPacket configsToSend = new AgcConfigurationPacket();
+            this.config = new AgcConfigurationPacket();
 
-            // region Preparing the configuration packet.
+            // region Preparing the this.configuration packet.
             // TODO: Make a settings file for these little things!
-            configsToSend.agcVersion = "v1.0.0";
-            configsToSend.appStartMilliSinceEpoch =
+            this.config.agcVersion = "v1.0.0";
+            this.config.appStartMilliSinceEpoch =
               System.currentTimeMillis() - MainActivity.sketch.millis();
-            configsToSend.screenDimensions = new PVector(width, height);
+            this.config.screenDimensions = new PVector(width, height);
 
-            configsToSend.buttons = new ArrayList<>();
-            configsToSend.dpadButtons = new ArrayList<>();
-            configsToSend.thumbsticks = new ArrayList<>();
-            configsToSend.touchpads = new ArrayList<>();
+            this.config.buttons = new ArrayList<>();
+            this.config.dpadButtons = new ArrayList<>();
+            this.config.thumbsticks = new ArrayList<>();
+            this.config.touchpads = new ArrayList<>();
             // endregion
 
             // region Makin' `ArrayList`s!
@@ -168,18 +170,18 @@ public class SketchWithScenes extends Sketch {
             this.thumbstickRenderers = new ArrayList<>();
             // endregion
 
-            // Don't forget `configsToSend.addObject()` when making new configurations!
+            // Don't forget `this.config.addObject()` when making new this.configurations!
 
             // region Making buttons!
             this.buttonRenderers.add(new ButtonRendererForClient(
-              configsToSend.addConfig(new ButtonConfig(
+              this.config.addConfig(new ButtonConfig(
                 new PVector(q3x - 90, q3y + 50),
                 new PVector(150, 150),
                 "A"))
             ));
 
             this.buttonRenderers.add(new ButtonRendererForClient(
-              configsToSend.addConfig(new ButtonConfig(
+              this.config.addConfig(new ButtonConfig(
                 new PVector(q3x + 90, q3y + 50),
                 new PVector(150, 150),
                 "B"))
@@ -188,14 +190,14 @@ public class SketchWithScenes extends Sketch {
 
             // region Making DPAD buttons!
             this.dpadButtonRenderers.add(new DpadButtonRendererForClient(
-              configsToSend.addConfig(new DpadButtonConfig(
+              this.config.addConfig(new DpadButtonConfig(
                 new PVector(qx - 80, q3y),
                 new PVector(100, 100),
                 DpadDirection.LEFT))
             ));
 
             this.dpadButtonRenderers.add(new DpadButtonRendererForClient(
-              configsToSend.addConfig(new DpadButtonConfig(
+              this.config.addConfig(new DpadButtonConfig(
                 new PVector(qx + 80, q3y),
                 new PVector(100, 100),
                 DpadDirection.RIGHT))
@@ -204,7 +206,7 @@ public class SketchWithScenes extends Sketch {
 
             // region A touchpad!
             this.touchpadRenderers.add(new TouchpadRenderForClient(
-              configsToSend.addConfig(new TouchpadConfig(
+              this.config.addConfig(new TouchpadConfig(
                 new PVector(600, 800),
                 new PVector(q3x, qy)
               ))));
@@ -212,21 +214,20 @@ public class SketchWithScenes extends Sketch {
 
             // region A thumbstick too! ...yeah, I gotta test things out, sorry...
             this.thumbstickRenderers.add(new ThumbstickRendererForClient(
-              configsToSend.addConfig(new ThumbstickConfig(
+              this.config.addConfig(new ThumbstickConfig(
                 new PVector(80, 80),
                 new PVector(qx, qy)
               ))
             ));
             // endregion
 
-            System.out.println("Configuration-to-state mapping numbers:");
-            for (ButtonRendererForClient r : this.buttonRenderers) {
-                System.out.println(r.config.controlNumber);
-            }
+            //System.out.println("Configuration-to-state mapping numbers:");
+            //for (ButtonRendererForClient r : this.buttonRenderers) {
+            //System.out.printf("\t`%d`\n",r.this.config.controlNumber);
+            //}
 
-            Sketch.MY_CONFIG = configsToSend;
             socket.sendCode(RequestCode.CLIENT_SENDS_CONFIG,
-              ByteSerial.encode(Sketch.MY_CONFIG),
+              ByteSerial.encode(this.config),
               serverIp, RequestCode.SERVER_PORT);
         }
 
@@ -235,13 +236,13 @@ public class SketchWithScenes extends Sketch {
         public void draw() {
             background(0);
 
-            System.out.printf("Framerate: `%d`.\n", (int)frameRate);
-
+            //System.out.printf("Framerate: `%d`.\n", (int)frameRate);
             if (ClientRenderer.all != null)
                 for (int i = 0; i < ClientRenderer.all.size(); i++)
                     ClientRenderer.all.get(i).draw(g);
         }
 
+        // region Touch events.
         @Override
         public void touchStarted(TouchEvent p_touchEvent) {
             if (ClientRenderer.all != null)
@@ -262,6 +263,7 @@ public class SketchWithScenes extends Sketch {
                 for (int i = 0; i < ClientRenderer.all.size(); i++)
                     ClientRenderer.all.get(i).touchEnded();
         }
+        // endregion
         // endregion
 
         @Override
@@ -301,31 +303,48 @@ public class SketchWithScenes extends Sketch {
     };
 
     Scene exitScene = new Scene() {
+        PVector yesPos = new PVector(), noPos = new PVector();
+
         @Override
         public void setup() {
             configShot = getGraphics();
+
+            yesPos.set(-qx, qy * 0.9f);
+            noPos.set(qx, yesPos.y);
         }
 
         @Override
         public void draw() {
             background(configShot);
+            translate(cx, cy);
 
             // The box!:
             pushMatrix();
-
-            translate(cx, cy);
             scale(cx, height);
-
             fill(64);
             rect(0, 0, 1.2f, 0.55f,
               0.1f, 0.1f, 0.1f, 0.1f);
-
             popMatrix();
 
             // The text options :D!~
             fill(0, 64, 214);
-            text(MainActivity.appAct.getString(R.string.exitScene_no), qx, q3y);
-            text(MainActivity.appAct.getString(R.string.exitScene_yes), q3x, q3y);
+            text(MainActivity.appAct.getString(R.string.exitScene_no), noPos.x, noPos.y);
+            text(MainActivity.appAct.getString(R.string.exitScene_yes), yesPos.x, yesPos.y);
+        }
+
+        @Override
+        public void mouseClicked() {
+            Sketch.unprojectTouches();
+            PVector touch = Sketch.listOfUnprojectedTouches.get(0);
+
+//            boolean yesPressed = CollisionAlgorithms
+//              .ptRect(
+//
+//                     ),
+//              noPressed = CollisionAlgorithms
+//                .ptRect(
+//
+//                       );
         }
     };
 

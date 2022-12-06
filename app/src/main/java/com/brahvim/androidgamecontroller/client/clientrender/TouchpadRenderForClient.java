@@ -29,7 +29,7 @@ public class TouchpadRenderForClient extends TouchpadRendererBase implements Cli
 
         boolean recordedState = false, isTouching;
 
-        for (PVector v : Sketch.listUnprojectedTouches) {
+        for (PVector v : Sketch.listOfUnprojectedTouches) {
             PVector transform = super.config.transform,
               scale = super.config.scale;
 
