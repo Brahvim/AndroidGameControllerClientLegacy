@@ -91,8 +91,9 @@ public class AgcClientSocket extends UdpSocket {
 
     @Override
     public void onReceive(@NotNull byte[] p_data, String p_ip, int p_port) {
-        if (ClientScene.currentScene != null)
-            ClientScene.currentScene.onReceive(p_data, p_ip, p_port);
+        Scene currentScene = Scene.getCurrentScene();
+        if (currentScene != null)
+            currentScene.onReceive(p_data, p_ip, p_port);
     }
 
     // region Non-so-important Overrides.

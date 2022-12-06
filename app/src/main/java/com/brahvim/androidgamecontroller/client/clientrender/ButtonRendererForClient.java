@@ -6,7 +6,7 @@ import com.brahvim.androidgamecontroller.client.MainActivity;
 import com.brahvim.androidgamecontroller.client.Sketch;
 import com.brahvim.androidgamecontroller.render.ButtonRendererBase;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
-import com.brahvim.androidgamecontroller.serial.config.ButtonConfig;
+import com.brahvim.androidgamecontroller.serial.configs.ButtonConfig;
 
 import processing.core.PVector;
 
@@ -16,44 +16,7 @@ public class ButtonRendererForClient extends ButtonRendererBase implements Clien
         ClientRenderer.all.add(this);
     }
 
-    public void touchStarted() {
-        super.state.ppressed = super.state.pressed;
-        this.recordTouch();
-        this.sendStateIfChanged();
-    }
-
-    public void touchMoved() {
-        // Record previous state:
-        super.state.ppressed = super.state.pressed;
-
-        // Get current state:
-        this.recordTouch();
-
-        // If changes took place, send 'em over! ":D
-        this.sendStateIfChanged();
-    }
-
-    public void touchEnded() {
-        super.state.ppressed = super.state.pressed;
-        this.recordTouch();
-        this.sendStateIfChanged();
-    }
-
-    private void sendStateIfChanged() {
-        super.state.controlNumber = super.config.controlNumber;
-
-        // If the state didn't change, let's go back!:
-        if (super.state.ppressed == super.state.pressed)
-            return;
-
-        System.out.printf("Button `%s`'s state changed, sending it over...\n", super.config.text);
-        //System.out.printf("It was previously %s pressed and is now %spressed.\n",
-        //super.state.ppressed? "" : "not ",
-        //super.state.pressed? "" : "not ");
-
-        Sketch.socket.send(ByteSerial.encode(super.state),
-          Sketch.serverIp, RequestCode.SERVER_PORT);
-    }
+    // No `draw()` - it is inherited.
 
     private void recordTouch() {
         this.state.pressed = false;
@@ -81,5 +44,46 @@ public class ButtonRendererForClient extends ButtonRendererBase implements Clien
 
         this.state.pressed &= MainActivity.sketch.mousePressed;
     }
+
+    private void sendStateIfChanged() {
+        super.state.controlNumber = super.config.controlNumber;
+
+        // If the state didn't change, let's go back!:
+        if (super.state.ppressed == super.state.pressed)
+            return;
+
+        System.out.printf("Button `%s`'s state changed, sending it over...\n", super.config.text);
+        //System.out.printf("It was previously %s pressed and is now %spressed.\n",
+        //super.state.ppressed? "" : "not ",
+        //super.state.pressed? "" : "not ");
+
+        Sketch.socket.send(ByteSerial.encode(super.state),
+          Sketch.serverIp, RequestCode.SERVER_PORT);
+    }
+
+    // region Touch events.
+    public void touchStarted() {
+        super.state.ppressed = super.state.pressed;
+        this.recordTouch();
+        this.sendStateIfChanged();
+    }
+
+    public void touchMoved() {
+        // Record previous state:
+        super.state.ppressed = super.state.pressed;
+
+        // Get current state:
+        this.recordTouch();
+
+        // If changes took place, send 'em over! ":D
+        this.sendStateIfChanged();
+    }
+
+    public void touchEnded() {
+        super.state.ppressed = super.state.pressed;
+        this.recordTouch();
+        this.sendStateIfChanged();
+    }
+    // endregion
 
 } // End of class.

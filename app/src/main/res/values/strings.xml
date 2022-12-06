@@ -27,4 +27,8 @@
         on your phone\'s hotspot and not your WiFi network!
         </string>
 
+    <string name="exitScene_yes">Exit.</string>
+
+    <string name="exitScene_no">Wait!</string>
+
 </resources>

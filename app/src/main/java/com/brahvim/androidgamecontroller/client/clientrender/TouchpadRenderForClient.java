@@ -6,7 +6,7 @@ import com.brahvim.androidgamecontroller.client.MainActivity;
 import com.brahvim.androidgamecontroller.client.Sketch;
 import com.brahvim.androidgamecontroller.render.TouchpadRendererBase;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
-import com.brahvim.androidgamecontroller.serial.config.TouchpadConfig;
+import com.brahvim.androidgamecontroller.serial.configs.TouchpadConfig;
 
 import processing.core.PVector;
 
@@ -16,24 +16,6 @@ public class TouchpadRenderForClient extends TouchpadRendererBase implements Cli
     public TouchpadRenderForClient(TouchpadConfig p_config) {
         super(p_config);
         ClientRenderer.all.add(this);
-    }
-
-    public void touchStarted() {
-        this.recordTouch();
-        this.sendStateIfChanged();
-    }
-
-    public void touchMoved() {
-        // Get current state:
-        this.recordTouch();
-
-        // If changes took place, send 'em over! ":D
-        this.sendStateIfChanged();
-    }
-
-    public void touchEnded() {
-        this.recordTouch();
-        this.sendStateIfChanged();
     }
 
     private void recordTouch() {
@@ -87,5 +69,25 @@ public class TouchpadRenderForClient extends TouchpadRendererBase implements Cli
         Sketch.socket.send(ByteSerial.encode(super.state),
           Sketch.serverIp, RequestCode.SERVER_PORT);
     }
+
+    // region Touch events.
+    public void touchStarted() {
+        this.recordTouch();
+        this.sendStateIfChanged();
+    }
+
+    public void touchMoved() {
+        // Get current state:
+        this.recordTouch();
+
+        // If changes took place, send 'em over! ":D
+        this.sendStateIfChanged();
+    }
+
+    public void touchEnded() {
+        this.recordTouch();
+        this.sendStateIfChanged();
+    }
+    // endregion
 
 }

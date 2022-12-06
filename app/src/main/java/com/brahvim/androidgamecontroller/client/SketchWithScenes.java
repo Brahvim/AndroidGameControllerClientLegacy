@@ -11,15 +11,16 @@ import com.brahvim.androidgamecontroller.client.clientrender.ThumbstickRendererF
 import com.brahvim.androidgamecontroller.client.clientrender.TouchpadRenderForClient;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
 import com.brahvim.androidgamecontroller.serial.DpadDirection;
-import com.brahvim.androidgamecontroller.serial.config.AgcConfigurationPacket;
-import com.brahvim.androidgamecontroller.serial.config.ButtonConfig;
-import com.brahvim.androidgamecontroller.serial.config.DpadButtonConfig;
-import com.brahvim.androidgamecontroller.serial.config.ThumbstickConfig;
-import com.brahvim.androidgamecontroller.serial.config.TouchpadConfig;
+import com.brahvim.androidgamecontroller.serial.configs.AgcConfigurationPacket;
+import com.brahvim.androidgamecontroller.serial.configs.ButtonConfig;
+import com.brahvim.androidgamecontroller.serial.configs.DpadButtonConfig;
+import com.brahvim.androidgamecontroller.serial.configs.ThumbstickConfig;
+import com.brahvim.androidgamecontroller.serial.configs.TouchpadConfig;
 
 import java.util.ArrayList;
 
 import processing.core.PConstants;
+import processing.core.PImage;
 import processing.core.PVector;
 import processing.event.TouchEvent;
 
@@ -27,10 +28,12 @@ public class SketchWithScenes extends Sketch {
     public final String BROADCAST_ADDRESS = "255.255.255.255"; //getBroadAddr();
 
     void appStart() {
-        ClientScene.setScene(loadScene);
+        Scene.setScene(loadScene);
     }
 
-    ClientScene loadScene = new ClientScene() {
+    PImage configShot;
+
+    Scene loadScene = new Scene() {
         public final int ADD_ME_REQUEST_INTERVAL = 4;
 
         @Override
@@ -40,13 +43,13 @@ public class SketchWithScenes extends Sketch {
               p_data.length, p_ip, p_port);
 
             if (RequestCode.packetHasCode(p_data)) {
-                RequestCode code = RequestCode.fromPacket(p_data);
+                RequestCode code = RequestCode.fromReceivedPacket(p_data);
                 System.out.printf("[LOAD SCENE] It was a code, `%s`!\n", code.toString());
                 switch (code) {
                     case CLIENT_WAS_REGISTERED:
                         serverIp = p_ip;
                         SketchWithScenes.super.inSession = true;
-                        ClientScene.setScene(workScene);
+                        Scene.setScene(workScene);
                         break;
 
                     default:
@@ -58,7 +61,7 @@ public class SketchWithScenes extends Sketch {
         public void sendAddMeRequest(boolean p_hotspotMode, boolean p_noServers,
                                      ArrayList<String> p_networks) {
             if (p_hotspotMode) {
-                // Send an `ADD_ME`request to all servers on the LAN!~:
+                // Send an `ADD_ME` request to all servers on the LAN!~:
                 if (!(p_noServers || SketchWithScenes.super.inSession)) {
                     for (String s : p_networks)
                         socket.sendCode(RequestCode.ADD_ME,
@@ -127,11 +130,11 @@ public class SketchWithScenes extends Sketch {
 
         @Override
         public void onBackPressed() {
-            completeExit();
+            agcExit();
         }
     };
 
-    ClientScene workScene = new ClientScene() {
+    Scene workScene = new Scene() {
         ArrayList<ButtonRendererForClient> buttonRenderers;
         ArrayList<DpadButtonRendererForClient> dpadButtonRenderers;
         ArrayList<TouchpadRenderForClient> touchpadRenderers;
@@ -139,14 +142,15 @@ public class SketchWithScenes extends Sketch {
 
         @Override
         public void setup() {
-            // Ok bois, time for a little speed!...
+            // Ok bois! Time for a little speed!...
             frameRate(1000);
             textSize(Sketch.DEFAULT_FONT_SIZE);
 
             AgcConfigurationPacket configsToSend = new AgcConfigurationPacket();
 
             // region Preparing the configuration packet.
-            configsToSend.AGC_VERSION = RequestCode.CLIENT_CURRENT_VERSION;
+            // TODO: Make a settings file for these little things!
+            configsToSend.agcVersion = "v1.0.0";
             configsToSend.appStartMilliSinceEpoch =
               System.currentTimeMillis() - MainActivity.sketch.millis();
             configsToSend.screenDimensions = new PVector(width, height);
@@ -158,62 +162,57 @@ public class SketchWithScenes extends Sketch {
             // endregion
 
             // region Makin' `ArrayList`s!
-            buttonRenderers = new ArrayList<>();
-            dpadButtonRenderers = new ArrayList<>();
-            touchpadRenderers = new ArrayList<>();
-            thumbstickRenderers = new ArrayList<>();
+            this.buttonRenderers = new ArrayList<>();
+            this.dpadButtonRenderers = new ArrayList<>();
+            this.touchpadRenderers = new ArrayList<>();
+            this.thumbstickRenderers = new ArrayList<>();
             // endregion
 
             // Don't forget `configsToSend.addObject()` when making new configurations!
 
             // region Making buttons!
-            buttonRenderers.add(
-              new ButtonRendererForClient(configsToSend.addObject(
-                new ButtonConfig(
-                  new PVector(q3x - 90, q3y + 50),
-                  new PVector(150, 150),
-                  "A"))
-              ));
+            this.buttonRenderers.add(new ButtonRendererForClient(
+              configsToSend.addConfig(new ButtonConfig(
+                new PVector(q3x - 90, q3y + 50),
+                new PVector(150, 150),
+                "A"))
+            ));
 
-            buttonRenderers.add(
-              new ButtonRendererForClient(configsToSend.addObject(
-                new ButtonConfig(
-                  new PVector(q3x + 90, q3y + 50),
-                  new PVector(150, 150),
-                  "B"))
-              ));
+            this.buttonRenderers.add(new ButtonRendererForClient(
+              configsToSend.addConfig(new ButtonConfig(
+                new PVector(q3x + 90, q3y + 50),
+                new PVector(150, 150),
+                "B"))
+            ));
             // endregion
 
             // region Making DPAD buttons!
-            dpadButtonRenderers.add(new DpadButtonRendererForClient(
-              configsToSend.addObject(new DpadButtonConfig(
+            this.dpadButtonRenderers.add(new DpadButtonRendererForClient(
+              configsToSend.addConfig(new DpadButtonConfig(
                 new PVector(qx - 80, q3y),
                 new PVector(100, 100),
                 DpadDirection.LEFT))
             ));
 
-            dpadButtonRenderers.add(new DpadButtonRendererForClient(
-              configsToSend.addObject(
-                new DpadButtonConfig(
-                  new PVector(qx + 80, q3y),
-                  new PVector(100, 100),
-                  DpadDirection.RIGHT))
+            this.dpadButtonRenderers.add(new DpadButtonRendererForClient(
+              configsToSend.addConfig(new DpadButtonConfig(
+                new PVector(qx + 80, q3y),
+                new PVector(100, 100),
+                DpadDirection.RIGHT))
             ));
             // endregion
 
             // region A touchpad!
-            touchpadRenderers.add(
-              new TouchpadRenderForClient(
-                configsToSend.addObject(
-                  new TouchpadConfig(
-                    new PVector(600, 800),
-                    new PVector(q3x, qy)
-                  ))));
+            this.touchpadRenderers.add(new TouchpadRenderForClient(
+              configsToSend.addConfig(new TouchpadConfig(
+                new PVector(600, 800),
+                new PVector(q3x, qy)
+              ))));
             // endregion
 
             // region A thumbstick too! ...yeah, I gotta test things out, sorry...
-            thumbstickRenderers.add(new ThumbstickRendererForClient(
-              configsToSend.addObject(new ThumbstickConfig(
+            this.thumbstickRenderers.add(new ThumbstickRendererForClient(
+              configsToSend.addConfig(new ThumbstickConfig(
                 new PVector(80, 80),
                 new PVector(qx, qy)
               ))
@@ -221,7 +220,7 @@ public class SketchWithScenes extends Sketch {
             // endregion
 
             System.out.println("Configuration-to-state mapping numbers:");
-            for (ButtonRendererForClient r : buttonRenderers) {
+            for (ButtonRendererForClient r : this.buttonRenderers) {
                 System.out.println(r.config.controlNumber);
             }
 
@@ -271,13 +270,13 @@ public class SketchWithScenes extends Sketch {
               p_port);
 
             if (RequestCode.packetHasCode(p_data)) {
-                RequestCode code = RequestCode.fromPacket(p_data);
+                RequestCode code = RequestCode.fromReceivedPacket(p_data);
                 System.out.printf("It was a code, `%s`!\n", code.toString());
 
                 switch (code) {
                     case SERVER_CLOSE:
                         MainActivity.sketch.inSession = false;
-                        ClientScene.setScene(loadScene);
+                        Scene.setScene(loadScene);
                         break;
 
                     default:
@@ -288,9 +287,9 @@ public class SketchWithScenes extends Sketch {
 
         @Override
         public void onBackPressed() {
-            System.out.println("Back key pressed...");
-            quickExitIfCan(); // Tells the server to exit if it can.
-            completeExit();
+            agcExit();
+            //quickExitIfCan(); // Tells the server to exit if it can.
+            //completeExit();
         }
 
         @Override
@@ -298,6 +297,35 @@ public class SketchWithScenes extends Sketch {
             // Ok, so the app basically exited. No, I won't use `savedInstanceState` :joy:
             quickExitIfCan();
             completeExit();
+        }
+    };
+
+    Scene exitScene = new Scene() {
+        @Override
+        public void setup() {
+            configShot = getGraphics();
+        }
+
+        @Override
+        public void draw() {
+            background(configShot);
+
+            // The box!:
+            pushMatrix();
+
+            translate(cx, cy);
+            scale(cx, height);
+
+            fill(64);
+            rect(0, 0, 1.2f, 0.55f,
+              0.1f, 0.1f, 0.1f, 0.1f);
+
+            popMatrix();
+
+            // The text options :D!~
+            fill(0, 64, 214);
+            text(MainActivity.appAct.getString(R.string.exitScene_no), qx, q3y);
+            text(MainActivity.appAct.getString(R.string.exitScene_yes), q3x, q3y);
         }
     };
 
@@ -322,6 +350,10 @@ public class SketchWithScenes extends Sketch {
     // endregion
 
     // region Stuff that helps AGC exit.
+    void agcExit() {
+        Scene.setScene(exitScene);
+    }
+
     void quickExitIfCan() {
         if (serverIp != null) {
             socket.sendCode(RequestCode.CLIENT_CLOSE, serverIp, RequestCode.SERVER_PORT);

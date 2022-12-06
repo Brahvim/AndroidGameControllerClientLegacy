@@ -1,7 +1,7 @@
 package com.brahvim.androidgamecontroller.client;
 
 import com.brahvim.androidgamecontroller.RequestCode;
-import com.brahvim.androidgamecontroller.serial.config.AgcConfigurationPacket;
+import com.brahvim.androidgamecontroller.serial.configs.AgcConfigurationPacket;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -142,9 +142,13 @@ public class Sketch extends PApplet {
           cameraUp.x, cameraUp.y, cameraUp.z);
         perspective(fov, scr, 0.1f, 10_000);
 
-        if (ClientScene.currentScene != null)
-            ClientScene.currentScene.draw();
-        else println("Current scene is `null`!");
+        // Render the current scene!:
+        {
+            Scene currentScene = Scene.getCurrentScene();
+            if (currentScene != null)
+                currentScene.draw();
+            else println("Current scene is `null`!");
+        }
     }
 
     // region Custom methods.
@@ -212,42 +216,42 @@ public class Sketch extends PApplet {
     // region Event callbacks.
     // region Mouse events.
     public void mousePressed() {
-        ClientScene.currentScene.mousePressed();
+        Scene.getCurrentScene().mousePressed();
     }
 
     public void mouseMoved() {
-        ClientScene.currentScene.mouseMoved();
+        Scene.getCurrentScene().mouseMoved();
     }
 
     @SuppressWarnings("unused")
     public void mouseWheel(MouseEvent p_mouseEvent) {
-        ClientScene.currentScene.mouseWheel(p_mouseEvent);
+        Scene.getCurrentScene().mouseWheel(p_mouseEvent);
     }
 
     public void mouseClicked() {
-        ClientScene.currentScene.mouseClicked();
+        Scene.getCurrentScene().mouseClicked();
     }
 
     public void mouseDragged() {
-        ClientScene.currentScene.mouseDragged();
+        Scene.getCurrentScene().mouseDragged();
     }
 
     public void mouseReleased() {
-        ClientScene.currentScene.mouseReleased();
+        Scene.getCurrentScene().mouseReleased();
     }
     // endregion
 
     // region Keyboard events.
     public void keyPressed() {
-        ClientScene.currentScene.keyPressed();
+        Scene.getCurrentScene().keyPressed();
     }
 
     public void keyTyped() {
-        ClientScene.currentScene.keyTyped();
+        Scene.getCurrentScene().keyTyped();
     }
 
     public void keyReleased() {
-        ClientScene.currentScene.keyReleased();
+        Scene.getCurrentScene().keyReleased();
     }
     // endregion
 
@@ -255,19 +259,19 @@ public class Sketch extends PApplet {
     @Override
     public void touchStarted(TouchEvent p_touchEvent) {
         Sketch.unprojectTouches();
-        ClientScene.currentScene.touchStarted(p_touchEvent);
+        Scene.getCurrentScene().touchStarted(p_touchEvent);
     }
 
     @Override
     public void touchMoved(processing.event.TouchEvent p_touchEvent) {
         Sketch.unprojectTouches();
-        ClientScene.currentScene.touchMoved(p_touchEvent);
+        Scene.getCurrentScene().touchMoved(p_touchEvent);
     }
 
     @Override
     public void touchEnded(processing.event.TouchEvent p_touchEvent) {
         Sketch.unprojectTouches();
-        ClientScene.currentScene.touchEnded(p_touchEvent);
+        Scene.getCurrentScene().touchEnded(p_touchEvent);
     }
     // endregion
     // endregion

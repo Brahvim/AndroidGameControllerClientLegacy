@@ -1,7 +1,7 @@
 package com.brahvim.androidgamecontroller.client;
 
-class SineWave {
-    // #region Fields.
+public class SineWave {
+    // region Fields.
     public float angleOffset, freqMult, freq;
     public float endTime = Float.MAX_VALUE - 1, aliveTime;
 
@@ -22,14 +22,17 @@ class SineWave {
      */
     public boolean zeroWhenInactive;
 
-    // #endregion
+    private Sketch parentSketch;
+    // endregion
 
-    // #region Constructors.
-    public SineWave() {
+    // region Constructors.
+    public SineWave(Sketch p_parentSketch) {
+        this.parentSketch = p_parentSketch;
     }
 
-    public SineWave(float p_freqMult) {
+    public SineWave(Sketch p_parentSketch, float p_freqMult) {
         this.freqMult = p_freqMult;
+        this.parentSketch = p_parentSketch;
     }
 
     // No matter what order you put them in, the API Note comes after the Author
@@ -44,10 +47,9 @@ class SineWave {
         this.angleOffset = p_angleOffset;
         // this.angleOffset = Math.abs((float) Math.toRadians(p_angleOffset));
     }
+    // endregion
 
-    // #endregion
-
-    // #region `start()` overloads and `setAngleOffset()`.
+    // region `start()` overloads and `setAngleOffset()`.
     public void start() {
         this.aliveTime = 0;
     }
@@ -60,9 +62,9 @@ class SineWave {
     public void setAngleOffset(float p_angleOffset) {
         this.angleOffset = p_angleOffset;
     }
-    // #endregion
+    // endregion
 
-    // #region End and extend!
+    // region End and extend!
     public void end() {
         this.endTime = 0;
     }
@@ -109,11 +111,11 @@ class SineWave {
 
         // this.endTime += (p_angle * (p_angle * this.freqMult) - this.angleOffset);
     }
-    // #endregion
+    // endregion
 
-    // #region Getters.
+    // region Getters.
     public float getStartTime() {
-        return MainActivity.sketch.millis() - this.aliveTime;
+        return this.parentSketch.millis() - this.aliveTime;
     }
 
     public float getTimeSinceStart() {
@@ -128,8 +130,8 @@ class SineWave {
         this.active = this.aliveTime <= this.endTime;
 
         if (this.active)
-            this.aliveTime += MainActivity.sketch.frameTime;
-            // ^^^ `frameTime` comes from "the Engine" by the way. (Hey - that's "Nerd"!)g
+            this.aliveTime += this.parentSketch.frameTime;
+            // ^^^ `frameTime` comes from "the Engine" by the way. (Hey - that's "Nerd"!)
         else if (this.zeroWhenInactive)
             return 0;
 
@@ -137,5 +139,5 @@ class SineWave {
         return (float)Math.sin(this.freq);
         // That looked like a matrix calculation LOL.
     }
-    // #endregion
+    // endregion
 }

@@ -53,7 +53,6 @@ public class MainActivity extends AppCompatActivity {
         // Remove the flag when AGC is disconnected or something! Waaah! Battery life!!!
 
         // NEVER do this in actual networking apps! AGC is snappy since it is on LAN...
-
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitAll().build());
 
         MainActivity.frame = new FrameLayout(this);
@@ -87,35 +86,38 @@ public class MainActivity extends AppCompatActivity {
         if (sketch != null)
             sketch.onNewIntent(p_intent);
     }
-// endregion
+    // endregion
 
-    // Android activity lifecycle events
-    // (PASSED STRAIGHT TO `ClientScene`s! with NULL CHECKS!11!)
+    // Android activity lifecycle events!
+    // (PASSED STRAIGHT TO `Scene`s! WITH NULL CHECKS!11!)
     // (I would've called super class methods LATER so I could do my own work first...):
 
-    // region
+    // region Android callbacks.
     @Override
     public void onBackPressed() {
         //super.onBackPressed(); // Interference!
 
-        if (ClientScene.currentScene != null)
-            ClientScene.currentScene.onBackPressed();
+        Scene currentScene = Scene.getCurrentScene();
+        if (currentScene != null)
+            currentScene.onBackPressed();
     }
 
     @Override
     public void onPause() {
         super.onPause();
 
-        if (ClientScene.currentScene != null)
-            ClientScene.currentScene.onPause();
+        Scene currentScene = Scene.getCurrentScene();
+        if (currentScene != null)
+            currentScene.onPause();
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        if (ClientScene.currentScene != null)
-            ClientScene.currentScene.onResume();
+        Scene currentScene = Scene.getCurrentScene();
+        if (currentScene != null)
+            currentScene.onResume();
     }
     // endregion
 

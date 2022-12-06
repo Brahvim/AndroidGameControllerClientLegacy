@@ -5,7 +5,7 @@ import com.brahvim.androidgamecontroller.client.CollisionAlgorithms;
 import com.brahvim.androidgamecontroller.client.Sketch;
 import com.brahvim.androidgamecontroller.render.ThumbstickRendererBase;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
-import com.brahvim.androidgamecontroller.serial.config.ThumbstickConfig;
+import com.brahvim.androidgamecontroller.serial.configs.ThumbstickConfig;
 
 import processing.core.PVector;
 import processing.event.TouchEvent;
@@ -16,25 +16,7 @@ public class ThumbstickRendererForClient extends ThumbstickRendererBase implemen
         ClientRenderer.all.add(this);
     }
 
-    // region Touch event callbacks.
-    @Override
-    public void touchStarted() {
-        this.recordTouch();
-        this.sendStateIfChanged();
-    }
-
-    @Override
-    public void touchMoved() {
-        this.recordTouch();
-        this.sendStateIfChanged();
-    }
-
-    @Override
-    public void touchEnded() {
-        this.recordTouch();
-        this.sendStateIfChanged();
-    }
-    // endregion
+    // No `draw()` - it is inherited, I guess.
 
     private void recordTouch() {
         boolean measureOnlyDir = false;
@@ -78,6 +60,7 @@ public class ThumbstickRendererForClient extends ThumbstickRendererBase implemen
           Sketch.serverIp, RequestCode.SERVER_PORT);
     }
 
+    // region Utlities for this class.
     // Not using `PVector.equals()` since the `z` may not always match.
     // ...what if you compare it with the touches from the previous frame,
     // ..before which you changed the camera or projection matrices? ;)
@@ -90,4 +73,26 @@ public class ThumbstickRendererForClient extends ThumbstickRendererBase implemen
         return this.draggingTouch.x == p_pointer.x
           && this.draggingTouch.y == p_pointer.y;
     }
+    // endregion
+
+    // region Touch events.
+    @Override
+    public void touchStarted() {
+        this.recordTouch();
+        this.sendStateIfChanged();
+    }
+
+    @Override
+    public void touchMoved() {
+        this.recordTouch();
+        this.sendStateIfChanged();
+    }
+
+    @Override
+    public void touchEnded() {
+        this.recordTouch();
+        this.sendStateIfChanged();
+    }
+    // endregion
+
 }
