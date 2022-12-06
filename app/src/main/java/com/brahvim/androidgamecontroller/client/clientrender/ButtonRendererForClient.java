@@ -38,11 +38,12 @@ public class ButtonRendererForClient extends ButtonRendererBase implements Clien
                         transform.y + (scale.y * 0.5f));
                 }
             }
-            if (this.state.pressed)
+
+            if (super.state.pressed)
                 break;
         }
 
-        this.state.pressed &= MainActivity.sketch.mousePressed;
+        super.state.pressed &= MainActivity.sketch.mousePressed;
     }
 
     private void sendStateIfChanged() {

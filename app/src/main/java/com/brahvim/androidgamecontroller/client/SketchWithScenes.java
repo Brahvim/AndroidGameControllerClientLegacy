@@ -20,7 +20,6 @@ import com.brahvim.androidgamecontroller.serial.configs.TouchpadConfig;
 import java.util.ArrayList;
 
 import processing.core.PConstants;
-import processing.core.PImage;
 import processing.core.PVector;
 import processing.event.TouchEvent;
 
@@ -30,8 +29,6 @@ public class SketchWithScenes extends Sketch {
     void appStart() {
         Scene.setScene(loadScene);
     }
-
-    PImage configShot;
 
     Scene loadScene = new Scene() {
         public final int ADD_ME_REQUEST_INTERVAL = 4;
@@ -152,7 +149,7 @@ public class SketchWithScenes extends Sketch {
 
             this.config = new AgcConfigurationPacket();
 
-            // region Preparing the this.configuration packet.
+            // region Preparing the configuration packet.
             // TODO: Make a settings file for these little things!
             this.config.agcVersion = "v1.0.0";
             this.config.appStartMilliSinceEpoch =
@@ -239,31 +236,27 @@ public class SketchWithScenes extends Sketch {
             background(0);
 
             //System.out.printf("Framerate: `%d`.\n", (int)frameRate);
-            if (ClientRenderer.all != null)
-                for (int i = 0; i < ClientRenderer.all.size(); i++)
-                    ClientRenderer.all.get(i).draw(g);
+            for (int i = 0; i < ClientRenderer.all.size(); i++)
+                ClientRenderer.all.get(i).draw(g);
         }
 
         // region Touch events.
         @Override
         public void touchStarted(TouchEvent p_touchEvent) {
-            if (ClientRenderer.all != null)
-                for (int i = 0; i < ClientRenderer.all.size(); i++)
-                    ClientRenderer.all.get(i).touchStarted();
+            for (int i = 0; i < ClientRenderer.all.size(); i++)
+                ClientRenderer.all.get(i).touchStarted();
         }
 
         @Override
         public void touchMoved(TouchEvent p_touchEvent) {
-            if (ClientRenderer.all != null)
-                for (int i = 0; i < ClientRenderer.all.size(); i++)
-                    ClientRenderer.all.get(i).touchMoved();
+            for (int i = 0; i < ClientRenderer.all.size(); i++)
+                ClientRenderer.all.get(i).touchMoved();
         }
 
         @Override
         public void touchEnded(TouchEvent p_touchEvent) {
-            if (ClientRenderer.all != null)
-                for (int i = 0; i < ClientRenderer.all.size(); i++)
-                    ClientRenderer.all.get(i).touchEnded();
+            for (int i = 0; i < ClientRenderer.all.size(); i++)
+                ClientRenderer.all.get(i).touchEnded();
         }
         // endregion
         // endregion
@@ -305,23 +298,21 @@ public class SketchWithScenes extends Sketch {
     };
 
     Scene exitScene = new Scene() {
-        final float TEXT_SCALE = 48, TEXT_SCALE_HALF = this.TEXT_SCALE * 0.5f;
+        final float TEXT_SCALE = 48; //, TEXT_SCALE_HALF = this.TEXT_SCALE * 0.5f;
         final float BOX_GAP = this.TEXT_SCALE;
 
         int waveEndMillis;
         SineWave fadeWave;
 
+        // "Dy" AKA "Dynamic":
         PVector yesPos = new PVector(), noPos = new PVector();
-        PVector yesPosRectStart, noPosRectStart;
-        PVector yesPosRectEnd, noPosRectEnd;
-
-        boolean yesPressed, noPressed;
+        PVector yesPosDy = new PVector(), noPosDy = new PVector();
+        boolean yesPressed, noPressed, canFillButtonColors;
 
         @Override
         public void setup() {
             frameRate(Sketch.refreshRate);
 
-            configShot = getGraphics();
             this.fadeWave = new SineWave(MainActivity.sketch, 0.001f);
             this.fadeWave.endWhenAngleIs(90);
             this.fadeWave.start(new Runnable() {
@@ -332,59 +323,68 @@ public class SketchWithScenes extends Sketch {
             });
 
             this.yesPos.set(-qx + 100, qy * 0.5f);
-            this.noPos.set(qx - 100, yesPos.y);
+            this.noPos.set(qx - 100, this.yesPos.y);
 
-            this.yesPosRectStart = new PVector(yesPos.x - this.BOX_GAP, yesPos.y - this.BOX_GAP);
-            this.yesPosRectEnd = new PVector(yesPos.x + this.BOX_GAP, yesPos.y + this.BOX_GAP);
+            this.canFillButtonColors = false;
 
-            this.noPosRectStart = new PVector(noPos.x - this.BOX_GAP, noPos.y - this.BOX_GAP);
-            this.noPosRectEnd = new PVector(noPos.x + this.BOX_GAP, noPos.y + this.BOX_GAP);
-
-            delay(255);
+            // These could be `true`, since the scene object retains information!
+            //this.yesPressed = false; // Of course this one can't!
+            this.noPressed = false;
         }
 
         @Override
         public void draw() {
-            background(configShot);
-
-            // region ...math! Text size and 'global' translation. ..and `buttonCheck()`!
-            float wave = this.fadeWave.get();
-
-            textSize(this.TEXT_SCALE * wave);
-            translate(cx, !this.fadeWave.active
-              ? cy + sin((millis() - waveEndMillis) * 0.001f) * 25
-              : cy * wave);
-
-            wave *= 255;
-            // endregion
+            background(0);
+            //background(configShot);
 
             // region The box! (And prompt!):
+            float wave = this.fadeWave.get();
+            textSize(this.TEXT_SCALE * wave);
+
+            float yPos = !this.fadeWave.active
+              ? cy + sin((millis() - this.waveEndMillis) * 0.001f) * 25
+              : cy * wave;
+
+            float alpha = wave * 255;
+
+            this.noPosDy.x = cx + this.noPos.x;
+            this.noPosDy.y = yPos + this.noPos.y;
+
+            this.yesPosDy.x = cx + this.yesPos.x;
+            this.yesPosDy.y = yPos + this.yesPos.y;
+
+            pushMatrix();
+            translate(cx, yPos);
+
             pushMatrix();
             scale(cx, height);
-            fill(64, wave);
+            fill(64, alpha);
             rect(0, 0, 1.2f, 0.55f,
               0.1f, 0.1f, 0.1f, 0.1f);
             popMatrix();
 
-            fill(255);
-            text(MainActivity.appAct.getString(R.string.exitScene_prompt), 0, -yesPos.y);
+            fill(255, alpha);
+            text(MainActivity.appAct.getString(R.string.exitScene_prompt),
+              0, -this.yesPosDy.y);
+            popMatrix();
             // endregion
 
             // region The text options :D!~
             // region "Yes" - exits the application:
-            if (yesPressed)
-                fill(214, 64, 0, wave);
-            else
-                fill(0, 64, 214, wave);
-            text(MainActivity.appAct.getString(R.string.exitScene_yes), yesPos.x, yesPos.y);
+            fill(0, 64, 214, alpha);
+            if (this.canFillButtonColors && this.yesPressed)
+                fill(214, 64, 0, alpha);
+
+            text(MainActivity.appAct
+              .getString(R.string.exitScene_yes), this.yesPosDy.x, this.yesPosDy.y);
             // endregion
 
             // region "No" - brings up the last scene:
-            if (noPressed)
-                fill(0, 214, 64, wave);
-            else
-                fill(0, 64, 214, wave);
-            text(MainActivity.appAct.getString(R.string.exitScene_no), noPos.x, noPos.y);
+            fill(0, 64, 214, alpha);
+            if (this.canFillButtonColors && this.noPressed)
+                fill(0, 214, 64, alpha);
+            text(MainActivity.appAct.getString(R.string.exitScene_no), this.noPosDy.x,
+              this.noPosDy.y);
             // endregion
             // endregion
         }
@@ -394,16 +394,29 @@ public class SketchWithScenes extends Sketch {
             //return;
 
             PVector touch = Sketch.listOfUnprojectedTouches.get(0);
-            yesPressed = CollisionAlgorithms
-              .ptRect(touch, yesPosRectStart, yesPosRectEnd);
-            noPressed = CollisionAlgorithms
-              .ptRect(touch, noPosRectStart, noPosRectEnd);
+            this.yesPressed = CollisionAlgorithms
+              .ptRect(touch.x, touch.y,
+                this.yesPosDy.x - this.BOX_GAP,
+                this.yesPosDy.y - this.BOX_GAP,
+                this.yesPosDy.x + this.BOX_GAP,
+                this.yesPosDy.y + this.BOX_GAP);
+            this.noPressed = CollisionAlgorithms
+              .ptRect(touch.x, touch.y,
+                this.noPosDy.x - this.BOX_GAP,
+                this.noPosDy.y - this.BOX_GAP,
+                this.noPosDy.x + this.BOX_GAP,
+                this.noPosDy.y + this.BOX_GAP);
+        }
+
+        @Override
+        public void touchStarted(TouchEvent p_touchEvent) {
+            this.canFillButtonColors = true;
         }
 
         @Override
         public void touchMoved(TouchEvent p_touchEvent) {
             //if (!this.fadeWave.active && this.fadeWave.wasActive() &&
-            if (Sketch.listOfUnprojectedTouches.size() != 0)
+            if (this.canFillButtonColors && Sketch.listOfUnprojectedTouches.size() != 0)
                 this.buttonCheck();
         }
 
@@ -414,11 +427,11 @@ public class SketchWithScenes extends Sketch {
 
             this.buttonCheck();
 
-            if (yesPressed) {
+            if (this.yesPressed) {
                 completeExit();
             }
 
-            if (noPressed) {
+            if (this.noPressed) {
                 Scene.setScene(Scene.getPreviousScene());
             }
         }

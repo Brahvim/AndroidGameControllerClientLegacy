@@ -148,11 +148,11 @@ public class Sketch extends PApplet {
         {
             Scene currentScene = Scene.getCurrentScene();
             if (currentScene != null) {
-                //pushMatrix();
-                //pushStyle();
+                pushMatrix();
+                pushStyle();
                 currentScene.draw();
-                //popMatrix();
-                //popStyle();
+                popStyle();
+                popMatrix();
             } else println("Current scene is `null`!");
         }
     }
