@@ -365,7 +365,7 @@ public class SketchWithScenes extends Sketch {
 
             fill(255, alpha);
             text(MainActivity.appAct.getString(R.string.exitScene_prompt),
-              0, -this.yesPosDy.y);
+              0, yPos - this.yesPosDy.y);
             popMatrix();
             // endregion
 
