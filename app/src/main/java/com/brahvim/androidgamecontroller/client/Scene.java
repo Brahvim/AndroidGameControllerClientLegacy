@@ -17,6 +17,10 @@ public class Scene {
         return Scene.currentScene;
     }
 
+    public static Scene getPreviousScene() {
+        return Scene.previousScene;
+    }
+
     public static void addScene(Scene p_scene) {
         Scene.SCENES.add(p_scene);
     }

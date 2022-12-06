@@ -25,7 +25,7 @@ import processing.core.PVector;
 import processing.event.TouchEvent;
 
 public class SketchWithScenes extends Sketch {
-    public final String BROADCAST_ADDRESS = "255.255.255.255"; //getBroadAddr();
+    public static final String BROADCAST_ADDRESS = "255.255.255.255"; //getBroadAddr();
 
     void appStart() {
         Scene.setScene(loadScene);
@@ -75,7 +75,7 @@ public class SketchWithScenes extends Sketch {
                   // The manufacturer - assigned name of the Android device:
                   Build.MODEL,
                   // Finally, the universal LAN broadcast IP and port number!:
-                  "255.255.255.255", RequestCode.SERVER_PORT);
+                  SketchWithScenes.BROADCAST_ADDRESS, RequestCode.SERVER_PORT);
             }
         }
 
@@ -100,6 +100,8 @@ public class SketchWithScenes extends Sketch {
                 sendAddMeRequest(hotspotMode, noServers, possibleServers);
 
             // Rendering!:
+            fill(255);
+
             if (hotspotMode) {
                 textSize(Sketch.DEFAULT_FONT_SIZE * 1.5f);
                 float gap1 = textAscent() - textDescent() * 12;
@@ -145,7 +147,7 @@ public class SketchWithScenes extends Sketch {
         @Override
         public void setup() {
             // Ok bois! Time for a little speed!...
-            frameRate(1000);
+            frameRate(Sketch.refreshRate);
             textSize(Sketch.DEFAULT_FONT_SIZE);
 
             this.config = new AgcConfigurationPacket();
@@ -303,48 +305,127 @@ public class SketchWithScenes extends Sketch {
     };
 
     Scene exitScene = new Scene() {
+        final float TEXT_SCALE = 48, TEXT_SCALE_HALF = this.TEXT_SCALE * 0.5f;
+        final float BOX_GAP = this.TEXT_SCALE;
+
+        int waveEndMillis;
+        SineWave fadeWave;
+
         PVector yesPos = new PVector(), noPos = new PVector();
+        PVector yesPosRectStart, noPosRectStart;
+        PVector yesPosRectEnd, noPosRectEnd;
+
+        boolean yesPressed, noPressed;
 
         @Override
         public void setup() {
-            configShot = getGraphics();
+            frameRate(Sketch.refreshRate);
 
-            yesPos.set(-qx, qy * 0.9f);
-            noPos.set(qx, yesPos.y);
+            configShot = getGraphics();
+            this.fadeWave = new SineWave(MainActivity.sketch, 0.001f);
+            this.fadeWave.endWhenAngleIs(90);
+            this.fadeWave.start(new Runnable() {
+                @Override
+                public void run() {
+                    waveEndMillis = millis();
+                }
+            });
+
+            this.yesPos.set(-qx + 100, qy * 0.5f);
+            this.noPos.set(qx - 100, yesPos.y);
+
+            this.yesPosRectStart = new PVector(yesPos.x - this.BOX_GAP, yesPos.y - this.BOX_GAP);
+            this.yesPosRectEnd = new PVector(yesPos.x + this.BOX_GAP, yesPos.y + this.BOX_GAP);
+
+            this.noPosRectStart = new PVector(noPos.x - this.BOX_GAP, noPos.y - this.BOX_GAP);
+            this.noPosRectEnd = new PVector(noPos.x + this.BOX_GAP, noPos.y + this.BOX_GAP);
+
+            delay(255);
         }
 
         @Override
         public void draw() {
             background(configShot);
-            translate(cx, cy);
 
-            // The box!:
+            // region ...math! Text size and 'global' translation. ..and `buttonCheck()`!
+            float wave = this.fadeWave.get();
+
+            textSize(this.TEXT_SCALE * wave);
+            translate(cx, !this.fadeWave.active
+              ? cy + sin((millis() - waveEndMillis) * 0.001f) * 25
+              : cy * wave);
+
+            wave *= 255;
+            // endregion
+
+            // region The box! (And prompt!):
             pushMatrix();
             scale(cx, height);
-            fill(64);
+            fill(64, wave);
             rect(0, 0, 1.2f, 0.55f,
               0.1f, 0.1f, 0.1f, 0.1f);
             popMatrix();
 
-            // The text options :D!~
-            fill(0, 64, 214);
-            text(MainActivity.appAct.getString(R.string.exitScene_no), noPos.x, noPos.y);
+            fill(255);
+            text(MainActivity.appAct.getString(R.string.exitScene_prompt), 0, -yesPos.y);
+            // endregion
+
+            // region The text options :D!~
+            // region "Yes" - exits the application:
+            if (yesPressed)
+                fill(214, 64, 0, wave);
+            else
+                fill(0, 64, 214, wave);
             text(MainActivity.appAct.getString(R.string.exitScene_yes), yesPos.x, yesPos.y);
+            // endregion
+
+            // region "No" - brings up the last scene:
+            if (noPressed)
+                fill(0, 214, 64, wave);
+            else
+                fill(0, 64, 214, wave);
+            text(MainActivity.appAct.getString(R.string.exitScene_no), noPos.x, noPos.y);
+            // endregion
+            // endregion
+        }
+
+        public void buttonCheck() {
+            //if (Sketch.listOfUnprojectedTouches.size() == 0)
+            //return;
+
+            PVector touch = Sketch.listOfUnprojectedTouches.get(0);
+            yesPressed = CollisionAlgorithms
+              .ptRect(touch, yesPosRectStart, yesPosRectEnd);
+            noPressed = CollisionAlgorithms
+              .ptRect(touch, noPosRectStart, noPosRectEnd);
         }
 
         @Override
-        public void mouseClicked() {
-            Sketch.unprojectTouches();
-            PVector touch = Sketch.listOfUnprojectedTouches.get(0);
+        public void touchMoved(TouchEvent p_touchEvent) {
+            //if (!this.fadeWave.active && this.fadeWave.wasActive() &&
+            if (Sketch.listOfUnprojectedTouches.size() != 0)
+                this.buttonCheck();
+        }
 
-//            boolean yesPressed = CollisionAlgorithms
-//              .ptRect(
-//
-//                     ),
-//              noPressed = CollisionAlgorithms
-//                .ptRect(
-//
-//                       );
+        @Override
+        public void touchEnded(TouchEvent p_touchEvent) {
+            if (Sketch.listOfUnprojectedTouches.size() == 0)
+                return;
+
+            this.buttonCheck();
+
+            if (yesPressed) {
+                completeExit();
+            }
+
+            if (noPressed) {
+                Scene.setScene(Scene.getPreviousScene());
+            }
+        }
+
+        @Override
+        public void onBackPressed() {
+            completeExit();
         }
     };
 
@@ -369,24 +450,25 @@ public class SketchWithScenes extends Sketch {
     // endregion
 
     // region Stuff that helps AGC exit.
-    void agcExit() {
+    public void agcExit() {
         Scene.setScene(exitScene);
     }
 
-    void quickExitIfCan() {
+    public void quickExitIfCan() {
         if (serverIp != null) {
-            socket.sendCode(RequestCode.CLIENT_CLOSE, serverIp, RequestCode.SERVER_PORT);
             completeExit();
         }
         System.out.println("`serverIp` is `null`, can't perform a quick exit!");
     }
 
-    void completeExit() {
+    public void completeExit() {
+        socket.sendCode(RequestCode.CLIENT_CLOSE, serverIp, RequestCode.SERVER_PORT);
         MainActivity.sketch.inSession = false;
-        System.out.println("Ending activity, killing process...");
 
+        System.out.println("Ending activity, killing process...");
         MainActivity.appAct.finish();
         Process.killProcess(Process.myPid());
     }
     // endregion
+
 }

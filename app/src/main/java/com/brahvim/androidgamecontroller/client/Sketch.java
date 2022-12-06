@@ -1,5 +1,8 @@
 package com.brahvim.androidgamecontroller.client;
 
+import android.content.Context;
+import android.view.WindowManager;
+
 import com.brahvim.androidgamecontroller.RequestCode;
 
 import java.io.BufferedReader;
@@ -15,7 +18,7 @@ import processing.opengl.PGraphicsOpenGL;
 
 public class Sketch extends PApplet {
     // region Fields! ":D!~
-    private static final int SERVER_PORT = RequestCode.SERVER_PORT;
+    public static float refreshRate;
 
     // region Stuff that makes AGC *GO!*:
     public static AgcClientSocket socket;
@@ -50,10 +53,11 @@ public class Sketch extends PApplet {
         //orientation(LANDSCAPE); // Forced it in the manifest, bois. It's *faster* now!
         updateRatios();
 
+        Sketch.refreshRate =
+          ((WindowManager)MainActivity.appAct.getSystemService(Context.WINDOW_SERVICE))
+            .getDefaultDisplay().getRefreshRate();
         socket = new AgcClientSocket();
-
         glGraphics = (PGraphicsOpenGL)g;
-
         cameraUp = new PVector(0, 1, 0);
         cameraPos = new PVector(cx, cy, 600);
         cameraCenter = new PVector(cx, cy);
@@ -74,7 +78,7 @@ public class Sketch extends PApplet {
     public void exit() {
         System.err.println("Sending a `CLIENT_CLOSE` request.");
         if (socket != null) {
-            socket.sendCode(RequestCode.CLIENT_CLOSE, serverIp, Sketch.SERVER_PORT);
+            socket.sendCode(RequestCode.CLIENT_CLOSE, serverIp, RequestCode.SERVER_PORT);
             socket.close();
         }
         super.exit();
@@ -143,9 +147,13 @@ public class Sketch extends PApplet {
         // Render the current scene!:
         {
             Scene currentScene = Scene.getCurrentScene();
-            if (currentScene != null)
+            if (currentScene != null) {
+                //pushMatrix();
+                //pushStyle();
                 currentScene.draw();
-            else println("Current scene is `null`!");
+                //popMatrix();
+                //popStyle();
+            } else println("Current scene is `null`!");
         }
     }
 
@@ -214,13 +222,12 @@ public class Sketch extends PApplet {
     // region Event callbacks.
     // region Mouse events (they are literally detected before touch ones!).
     public void mousePressed() {
-        System.out.println("Sketch.mousePressed");
+        Sketch.unprojectTouches();
         Scene.getCurrentScene().mousePressed();
     }
 
     // Never called by Processing!:
     public void mouseMoved() {
-        System.out.println("Sketch.mouseMoved");
         Scene.getCurrentScene().mouseMoved();
     }
 
@@ -231,7 +238,6 @@ public class Sketch extends PApplet {
 
     // ...also never called:
     public void mouseClicked() {
-        System.out.println("Sketch.mouseClicked");
         Scene.getCurrentScene().mouseClicked();
     }
 
@@ -240,7 +246,7 @@ public class Sketch extends PApplet {
     }
 
     public void mouseReleased() {
-        System.out.println("Sketch.mouseReleased");
+        Sketch.unprojectTouches();
         Scene.getCurrentScene().mouseReleased();
     }
     // endregion
@@ -262,21 +268,19 @@ public class Sketch extends PApplet {
     // region Touch events (Android only, of course!).
     @Override
     public void touchStarted(TouchEvent p_touchEvent) {
-        Sketch.unprojectTouches();
         Scene.getCurrentScene().touchStarted(p_touchEvent);
     }
 
+    // "YE ONLY MOVEMENT EVENT".
     @Override
     public void touchMoved(processing.event.TouchEvent p_touchEvent) {
-        System.out.println("Sketch.touchMoved");
         Sketch.unprojectTouches();
         Scene.getCurrentScene().touchMoved(p_touchEvent);
     }
+    // "FAIR WINDS T' YE!"
 
     @Override
     public void touchEnded(processing.event.TouchEvent p_touchEvent) {
-        System.out.println("Sketch.touchEnded");
-        Sketch.unprojectTouches();
         Scene.getCurrentScene().touchEnded(p_touchEvent);
     }
     // endregion
