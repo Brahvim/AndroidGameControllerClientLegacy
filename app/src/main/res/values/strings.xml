@@ -2,36 +2,33 @@
 
     <string name="app_name" translatable="false">AndroidGameController</string>
 
+    <!-- region `loadScene` -->
+    <string name="loadScene_welcome">
+        Welcome to AndroidGameController.
+    </string>
+
     <string name="loadScene_looking_for_servers">
-            Looking for AndroidGameController servers\n
-            on your network!
+            Searching your network for servers...
         </string>
 
     <string name="loadScene_press_for_hotspot">
-            (If you are using your WiFi hotspot to connect,\n
-            please hold a finger on the screen :)!)
+            Press a finger onto the screen for using mobile hotspot for the scan instead.
         </string>
 
     <string name="loadScene_no_wifi" formatted="true">
-            Huh, no network(s)..?\n
-            Please connect to the WiFi network\n
-            your computer is connected to!
+            No networks.
         </string>
+    <!-- endregion -->
 
-    <string name="loadScene_hotspot_mode_title">
-            Hotspot mode!
-        </string>
-
-    <string name="loadScene_hotspot_mode_description">
-        AGC will now try to connect to a server\n
-        on your phone\'s hotspot and not your WiFi network!
-        </string>
-
-    <string name="exitScene_prompt">Are you sure you want to\n
-        exit AndroidGameController?</string>
+    <!-- region `exitScene` -->
+    <string name="exitScene_prompt">
+        Are you sure you want to\n
+        exit AndroidGameController?
+    </string>
 
     <string name="exitScene_yes">Exit.</string>
 
     <string name="exitScene_no">Wait!</string>
+    <!-- endregion -->
 
 </resources>

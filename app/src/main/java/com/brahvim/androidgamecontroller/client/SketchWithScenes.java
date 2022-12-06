@@ -1,5 +1,7 @@
 package com.brahvim.androidgamecontroller.client;
 
+import android.content.Context;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Process;
 
@@ -9,6 +11,7 @@ import com.brahvim.androidgamecontroller.client.clientrender.ClientRenderer;
 import com.brahvim.androidgamecontroller.client.clientrender.DpadButtonRendererForClient;
 import com.brahvim.androidgamecontroller.client.clientrender.ThumbstickRendererForClient;
 import com.brahvim.androidgamecontroller.client.clientrender.TouchpadRenderForClient;
+import com.brahvim.androidgamecontroller.client.easings.SineWave;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
 import com.brahvim.androidgamecontroller.serial.DpadDirection;
 import com.brahvim.androidgamecontroller.serial.configs.AgcConfigurationPacket;
@@ -32,19 +35,26 @@ public class SketchWithScenes extends Sketch {
 
     Scene loadScene = new Scene() {
         final int ADD_ME_REQUEST_INTERVAL = 4;
+        int startFrame;
         SineWave welcomeTextWave, searchTextWave, hotspotTextWave;
+        WifiManager wifiMan;
 
         @Override
         public void setup() {
             frameRate(Sketch.refreshRate);
+            startFrame = (int)Sketch.refreshRate;
+            this.wifiMan = (WifiManager)MainActivity.appAct.getSystemService(Context.WIFI_SERVICE);
 
             welcomeTextWave = new SineWave(MainActivity.sketch, 0.001f);
-            searchTextWave = new SineWave(MainActivity.sketch, 0.003f);
+            searchTextWave = new SineWave(MainActivity.sketch, 0.0015f);
             hotspotTextWave = new SineWave(MainActivity.sketch, 0.001f);
+
 
             this.welcomeTextWave.endWhenAngleIs(90);
             this.hotspotTextWave.endWhenAngleIs(90);
+        }
 
+        public void startWaves() {
             this.welcomeTextWave.start(new Runnable() {
                 @Override
                 public void run() {
@@ -57,15 +67,29 @@ public class SketchWithScenes extends Sketch {
         @Override
         public void draw() {
             background(0);
+            if (frameCount < this.startFrame)
+                return;
+            else if (frameCount == this.startFrame) {
+                this.welcomeTextWave.start(new Runnable() {
+                    @Override
+                    public void run() {
+                        hotspotTextWave.start();
+                        searchTextWave.start();
+                    }
+                });
+            }
 
             // region Connection stuff!
             ArrayList<String> possibleServers = getNetworks();
             boolean noServers = possibleServers == null,
 
-              // If they're pressing on the screen, it means that
-              // they want to search on their WiFi hotspot instead.
+              // If this is `true`, it means that the search
+              // will be done on the WiFi hotspot instead.
               // ..that's probably going to be only me!
-              hotspotMode = touches.length > 0 && !noServers;
+              //hotspotMode = touches.length > 0 && !noServers;
+              hotspotMode = !this.wifiMan.isWifiEnabled();
+
+            System.out.printf("%s, %s\n", noServers? -1 : possibleServers.size(), hotspotMode);
 
             if (frameCount % ADD_ME_REQUEST_INTERVAL == 0)
                 sendAddMeRequest(hotspotMode, noServers, possibleServers);
@@ -75,23 +99,27 @@ public class SketchWithScenes extends Sketch {
             textSize(72);
             float welcomeTextWave = this.welcomeTextWave.get();
             fill(255, welcomeTextWave * 255);
-            text("Welcome to AndroidGameController.", cx, cy - (welcomeTextWave * qy));
+            text(MainActivity.appAct.getString(R.string.loadScene_welcome), cx,
+              cy - (welcomeTextWave * qy));
 
-            textSize(12);
-            fill(255, this.hotspotTextWave.get() * 255);
-            text("Hold a finger onto the screen for using mobile hotspot for the scan instead.",
-              cx, cy);
 
             textSize(48);
-            fill(255, this.searchTextWave.get() * 255);
-            text("Searching your network for servers".concat(hotspotMode?
-                "\n...on your mobile hotspot." : "...")
-              , cx, cy);
+            // Both `boolean`s are necessary in this statement!
+            // `hotspotMode` may not always be `!noServers`!
+            if (noServers && !hotspotMode) {
+                fill(25, 0, 0);
+                text(MainActivity.appAct.getString(R.string.loadScene_no_wifi), cx, cy);
+            } else {
+                fill(255, this.searchTextWave.get() * 255);
+                text(MainActivity.appAct.getString(R.string.loadScene_looking_for_servers), cx, cy);
+            }
 
+            textSize(24);
+            fill(255, abs(this.hotspotTextWave.get() * 255));
+            text(MainActivity.appAct.getString(R.string.loadScene_press_for_hotspot), cx, q3y);
             // endregion
 
         }
-
 
         /*
         @Override
@@ -316,8 +344,8 @@ public class SketchWithScenes extends Sketch {
             for (int i = 0; i < ClientRenderer.all.size(); i++)
                 ClientRenderer.all.get(i).touchEnded();
         }
-        // endregion
-        // endregion
+// endregion
+// endregion
 
         @Override
         public void onReceive(byte[] p_data, String p_ip, int p_port) {
@@ -367,7 +395,7 @@ public class SketchWithScenes extends Sketch {
         PVector yesPos = new PVector(), noPos = new PVector();
         PVector yesPosDy = new PVector(), noPosDy = new PVector();
         boolean yesPressed, noPressed, canFillButtonColors;
-        // endregion
+// endregion
 
         @Override
         public void setup() {
@@ -522,7 +550,7 @@ public class SketchWithScenes extends Sketch {
         pushStyle();
         popMatrix();
     }
-    // endregion
+// endregion
 
     // region Stuff that helps AGC exit.
     public void agcExit() {

@@ -1,4 +1,6 @@
-package com.brahvim.androidgamecontroller.client;
+package com.brahvim.androidgamecontroller.client.easings;
+
+import com.brahvim.androidgamecontroller.client.Sketch;
 
 public class SineWave {
     // region Fields.
@@ -47,11 +49,11 @@ public class SineWave {
     public SineWave(float p_freqMult, float p_angleOffset) {
         this.freqMult = p_freqMult;
         this.angleOffset = p_angleOffset;
-        // this.angleOffset = Math.abs((float) Math.toRadians(p_angleOffset));
+        // this.parameterOffset = Math.abs((float) Math.toRadians(p_angleOffset));
     }
     // endregion
 
-    // region `start()` overloads and `setAngleOffset()`.
+    // region `start()` overloads and `setParameterOffset()`.
     public void start() {
         this.aliveTime = 0;
     }
@@ -94,7 +96,7 @@ public class SineWave {
 
         // Was an idea to avoid I don't get negative values and the frequency doesn't
         // double - but I didn't use it.. don't ask me why :joy::
-        // this.endTime = ((float) Math.toRadians(p_angle) - this.angleOffset)
+        // this.endTime = ((float) Math.toRadians(p_angle) - this.parameterOffset)
         // / this.freqMult; // PS This was what I calculated on paper.
         // this.endTime = Math.abs((this.endTime - this.aliveTime) * 0.5f);
 
@@ -102,11 +104,11 @@ public class SineWave {
         // the Nerd Game Engine:
         // this.endTime = this.aliveTime + ((float) (p_angle) * ((float)
         // Math.toRadians(p_angle) *
-        // this.freqMult)) - this.angleOffset;
+        // this.freqMult)) - this.parameterOffset;
 
         // From the early days - the framecount calculation!:
         // this.endTime = this.aliveTime + (int) (p_angle * (p_angle * this.freqMult)
-        // - this.angleOffset);
+        // - this.parameterOffset);
 
         // System.out.println(this.aliveTime);
         // System.out.println(this.endTime);
@@ -121,7 +123,7 @@ public class SineWave {
           Math.abs(((float)Math.toRadians(p_angle) - this.angleOffset) / this.freqMult)
           - this.endTime;
 
-        // this.endTime += (p_angle * (p_angle * this.freqMult) - this.angleOffset);
+        // this.endTime += (p_angle * (p_angle * this.freqMult) - this.parameterOffset);
     }
     // endregion
 
