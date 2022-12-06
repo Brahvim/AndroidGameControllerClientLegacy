@@ -31,54 +31,28 @@ public class SketchWithScenes extends Sketch {
     }
 
     Scene loadScene = new Scene() {
-        public final int ADD_ME_REQUEST_INTERVAL = 4;
-
-        @Override
-        public void onReceive(byte[] p_data, String p_ip, int p_port) {
-            System.out.printf(
-              "[LOAD SCENE] Received `%d` bytes from IP: `%s`, port:`%d`.\n",
-              p_data.length, p_ip, p_port);
-
-            if (RequestCode.packetHasCode(p_data)) {
-                RequestCode code = RequestCode.fromReceivedPacket(p_data);
-                System.out.printf("[LOAD SCENE] It was a code, `%s`!\n", code.toString());
-                switch (code) {
-                    case CLIENT_WAS_REGISTERED:
-                        serverIp = p_ip;
-                        SketchWithScenes.super.inSession = true;
-                        Scene.setScene(workScene);
-                        break;
-
-                    default:
-                        break;
-                }
-            } // End of `packetHasCode()` check.
-        } // End of `onReceive()`.
-
-        public void sendAddMeRequest(boolean p_hotspotMode, boolean p_noServers,
-                                     ArrayList<String> p_networks) {
-            if (p_hotspotMode) {
-                // Send an `ADD_ME` request to all servers on the LAN!~:
-                if (!(p_noServers || SketchWithScenes.super.inSession)) {
-                    for (String s : p_networks)
-                        socket.sendCode(RequestCode.ADD_ME,
-                          // The manufacturer - assigned name of the Android device:
-                          Build.MODEL,
-                          // Finally, our IP and port number !:
-                          s, RequestCode.SERVER_PORT);
-                }
-            } else {
-                socket.sendCode(RequestCode.ADD_ME,
-                  // The manufacturer - assigned name of the Android device:
-                  Build.MODEL,
-                  // Finally, the universal LAN broadcast IP and port number!:
-                  SketchWithScenes.BROADCAST_ADDRESS, RequestCode.SERVER_PORT);
-            }
-        }
+        final int ADD_ME_REQUEST_INTERVAL = 4;
+        final SineWave welcomeTextWave = new SineWave(MainActivity.sketch),
+          searchTextWave = new SineWave(MainActivity.sketch);
 
         @Override
         public void setup() {
-            frameRate(30);
+            frameRate(Sketch.refreshRate);
+
+            welcomeTextWave.start(new Runnable() {
+                @Override
+                public void run() {
+                    //
+                }
+            });
+
+            searchTextWave.start(new Runnable() {
+                @Override
+                public void run() {
+                    //
+                }
+            });
+
         }
 
         @Override
@@ -128,8 +102,51 @@ public class SketchWithScenes extends Sketch {
         } // End of `loadScene.draw()`.
 
         @Override
+        public void onReceive(byte[] p_data, String p_ip, int p_port) {
+            System.out.printf(
+              "[LOAD SCENE] Received `%d` bytes from IP: `%s`, port:`%d`.\n",
+              p_data.length, p_ip, p_port);
+
+            if (RequestCode.packetHasCode(p_data)) {
+                RequestCode code = RequestCode.fromReceivedPacket(p_data);
+                System.out.printf("[LOAD SCENE] It was a code, `%s`!\n", code.toString());
+                switch (code) {
+                    case CLIENT_WAS_REGISTERED:
+                        serverIp = p_ip;
+                        SketchWithScenes.super.inSession = true;
+                        Scene.setScene(workScene);
+                        break;
+
+                    default:
+                        break;
+                }
+            } // End of `packetHasCode()` check.
+        } // End of `onReceive()`.
+
+        @Override
         public void onBackPressed() {
             agcExit();
+        }
+
+        public void sendAddMeRequest(boolean p_hotspotMode, boolean p_noServers,
+                                     ArrayList<String> p_networks) {
+            if (p_hotspotMode) {
+                // Send an `ADD_ME` request to all servers on the LAN!~:
+                if (!(p_noServers || SketchWithScenes.super.inSession)) {
+                    for (String s : p_networks)
+                        socket.sendCode(RequestCode.ADD_ME,
+                          // The manufacturer - assigned name of the Android device:
+                          Build.MODEL,
+                          // Finally, our IP and port number !:
+                          s, RequestCode.SERVER_PORT);
+                }
+            } else {
+                socket.sendCode(RequestCode.ADD_ME,
+                  // The manufacturer - assigned name of the Android device:
+                  Build.MODEL,
+                  // Finally, the universal LAN broadcast IP and port number!:
+                  SketchWithScenes.BROADCAST_ADDRESS, RequestCode.SERVER_PORT);
+            }
         }
     };
 
@@ -298,6 +315,7 @@ public class SketchWithScenes extends Sketch {
     };
 
     Scene exitScene = new Scene() {
+        // region Fields (seriously! :|).
         final float TEXT_SCALE = 48; //, TEXT_SCALE_HALF = this.TEXT_SCALE * 0.5f;
         final float BOX_GAP = this.TEXT_SCALE;
 
@@ -308,6 +326,7 @@ public class SketchWithScenes extends Sketch {
         PVector yesPos = new PVector(), noPos = new PVector();
         PVector yesPosDy = new PVector(), noPosDy = new PVector();
         boolean yesPressed, noPressed, canFillButtonColors;
+        // endregion
 
         @Override
         public void setup() {
@@ -408,6 +427,7 @@ public class SketchWithScenes extends Sketch {
                 this.noPosDy.y + this.BOX_GAP);
         }
 
+        // region Events.
         @Override
         public void touchStarted(TouchEvent p_touchEvent) {
             this.canFillButtonColors = true;
@@ -440,6 +460,7 @@ public class SketchWithScenes extends Sketch {
         public void onBackPressed() {
             completeExit();
         }
+        // endregion
     };
 
     // region `backgroundWithAlpha()` overloads.
