@@ -102,7 +102,8 @@ public class SketchWithScenes extends Sketch {
                 // If we WERE connected previously,
                 // (..which is also assumed in the first frame!)
                 if (!this.pnoCon) {
-                    // TODO: I just realized that I could use two sine wave instances for this...
+                    // I just realized that I could use two sine wave instances for this...
+                    // ...but I won't touch this till I need to.
                     this.searchTextWave = new SineWave(MainActivity.sketch, 0.01f);
                     this.searchTextWave.start(new Runnable() {
                         @Override
