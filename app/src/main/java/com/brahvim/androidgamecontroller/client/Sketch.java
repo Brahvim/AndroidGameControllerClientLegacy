@@ -44,9 +44,9 @@ public class Sketch extends PApplet {
         fullScreen(P3D);
     }
 
-    public static void main(String[] args) {
-        System.out.println("Android is SO broken...");
-    }
+//    public static void main(String[] args) {
+//        System.out.println("Android is SO broken...");
+//    }
 
     @Override
     public void setup() {

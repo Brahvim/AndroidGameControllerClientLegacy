@@ -36,32 +36,30 @@ public class SketchWithScenes extends Sketch {
     Scene loadScene = new Scene() {
         final int ADD_ME_REQUEST_INTERVAL = 4;
         int startFrame;
+
         SineWave welcomeTextWave, searchTextWave, hotspotTextWave;
         WifiManager wifiMan;
+
+        boolean isHotspotOn, isWifiOn, noCon, pnoCon;
+        boolean searchTextWaveEventh;
+        final int SEARCH_TEXT_WAVE_SLEEP_MILLIS = 4000;
 
         @Override
         public void setup() {
             frameRate(Sketch.refreshRate);
             startFrame = (int)Sketch.refreshRate;
             this.wifiMan = (WifiManager)MainActivity.appAct.getSystemService(Context.WIFI_SERVICE);
+            HotspotStatus.init(this.wifiMan);
 
-            welcomeTextWave = new SineWave(MainActivity.sketch, 0.001f);
-            searchTextWave = new SineWave(MainActivity.sketch, 0.0015f);
-            hotspotTextWave = new SineWave(MainActivity.sketch, 0.001f);
-
+            this.welcomeTextWave = new SineWave(MainActivity.sketch, 0.001f);
+            this.searchTextWave = new SineWave(MainActivity.sketch, 0.0015f);
+            this.hotspotTextWave = new SineWave(MainActivity.sketch, 0.001f);
 
             this.welcomeTextWave.endWhenAngleIs(90);
             this.hotspotTextWave.endWhenAngleIs(90);
-        }
 
-        public void startWaves() {
-            this.welcomeTextWave.start(new Runnable() {
-                @Override
-                public void run() {
-                    hotspotTextWave.start();
-                    searchTextWave.start();
-                }
-            });
+            this.noCon = false;
+            this.pnoCon = false;
         }
 
         @Override
@@ -81,42 +79,83 @@ public class SketchWithScenes extends Sketch {
 
             // region Connection stuff!
             ArrayList<String> possibleServers = getNetworks();
-            boolean noServers = possibleServers == null,
-
-              // If this is `true`, it means that the search
-              // will be done on the WiFi hotspot instead.
-              // ..that's probably going to be only me!
-              //hotspotMode = touches.length > 0 && !noServers;
-              hotspotMode = !this.wifiMan.isWifiEnabled();
-
-            System.out.printf("%s, %s\n", noServers? -1 : possibleServers.size(), hotspotMode);
+            // If this is `true`, it means that the search
+            // will be done on the WiFi hotspot instead.
+            // ..that's probably going to be only me!
+            this.isHotspotOn = HotspotStatus.isEnabled();
+            this.isWifiOn = this.wifiMan.isWifiEnabled();
+            this.pnoCon = this.noCon;
+            this.noCon = !(this.isHotspotOn || this.isWifiOn);
 
             if (frameCount % ADD_ME_REQUEST_INTERVAL == 0)
-                sendAddMeRequest(hotspotMode, noServers, possibleServers);
+                sendAddMeRequest(isHotspotOn, possibleServers);
             // endregion
 
             // region Rendering!
             textSize(72);
             float welcomeTextWave = this.welcomeTextWave.get();
             fill(255, welcomeTextWave * 255);
-            text(MainActivity.appAct.getString(R.string.loadScene_welcome), cx,
-              cy - (welcomeTextWave * qy));
+            text(MainActivity.appAct.getString(R.string.loadScene_welcome),
+              cx, cy - (welcomeTextWave * qy));
 
+            if (this.noCon) {
+                // If we WERE connected previously,
+                // (..which is also assumed in the first frame!)
+                if (!this.pnoCon) {
+                    // TODO: I just realized that I could use two sine wave instances for this...
+                    this.searchTextWave = new SineWave(MainActivity.sketch, 0.01f);
+                    this.searchTextWave.start(new Runnable() {
+                        @Override
+                        public void run() {
+                            searchTextWaveEventh = !searchTextWaveEventh;
 
-            textSize(48);
-            // Both `boolean`s are necessary in this statement!
-            // `hotspotMode` may not always be `!noServers`!
-            if (noServers && !hotspotMode) {
-                fill(25, 0, 0);
-                text(MainActivity.appAct.getString(R.string.loadScene_no_wifi), cx, cy);
+                            if (searchTextWaveEventh)
+                                searchTextWave.start(/*this*/);
+                            else {
+                                searchTextWave.active = false;
+                                new Thread() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            Thread.sleep(SEARCH_TEXT_WAVE_SLEEP_MILLIS);
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                        searchTextWave.start();
+                                    }
+                                }.start();
+                            }
+                        }
+                    });
+                    this.searchTextWave.endWhenAngleIs(180);
+                }
+
+                fill(200, 100, 100);
+                textSize(48 + this.searchTextWave.get() * 20);
+                text(MainActivity.appAct.getString(R.string
+                  .loadScene_no_network), cx, cy);
+
+                fill(255);
+                textSize(24);
+                text(MainActivity.appAct.getString(R.string.loadScene_how_to_net), cx, q3y);
             } else {
+                // If there previously was no connection,
+                if (this.pnoCon) {
+                    this.searchTextWave.end();
+                    this.searchTextWave = new SineWave(MainActivity.sketch, 0.0015f);
+                    this.searchTextWave.start();
+                }
+
+                textSize(48);
                 fill(255, this.searchTextWave.get() * 255);
-                text(MainActivity.appAct.getString(R.string.loadScene_looking_for_servers), cx, cy);
+                text(MainActivity.appAct.getString(R.string
+                  .loadScene_looking_for_servers), cx, cy);
             }
 
             textSize(24);
             fill(255, abs(this.hotspotTextWave.get() * 255));
-            text(MainActivity.appAct.getString(R.string.loadScene_press_for_hotspot), cx, q3y);
+            text(MainActivity.appAct.getString(R.string
+              .loadScene_how_to_net), cx, q3y);
             // endregion
 
         }
@@ -197,21 +236,18 @@ public class SketchWithScenes extends Sketch {
             agcExit();
         }
 
-        public void sendAddMeRequest(boolean p_hotspotMode, boolean p_noServers,
-                                     ArrayList<String> p_networks) {
+        public void sendAddMeRequest(boolean p_hotspotMode, ArrayList<String> p_networks) {
             if (p_hotspotMode) {
                 // Send an `ADD_ME` request to all servers on the LAN!~:
-                if (!(p_noServers || SketchWithScenes.super.inSession)) {
-                    for (String s : p_networks)
+                if (!(p_networks == null || SketchWithScenes.super.inSession)) {
+                    for (String ip : p_networks)
                         socket.sendCode(RequestCode.ADD_ME,
-                          // The manufacturer - assigned name of the Android device:
-                          Build.MODEL,
-                          // Finally, our IP and port number !:
-                          s, RequestCode.SERVER_PORT);
+                          // Manufacturer-assigned name, IP and port!:
+                          Build.MODEL, ip, RequestCode.SERVER_PORT);
                 }
             } else {
                 socket.sendCode(RequestCode.ADD_ME,
-                  // The manufacturer - assigned name of the Android device:
+                  // The manufacturer-assigned name of the Android device:
                   Build.MODEL,
                   // Finally, the universal LAN broadcast IP and port number!:
                   SketchWithScenes.BROADCAST_ADDRESS, RequestCode.SERVER_PORT);

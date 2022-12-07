@@ -6,17 +6,23 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class HotspotStatus {
-    public static int AP_STATE_DISABLING = 10;
-    public static int AP_STATE_DISABLED = 11;
-    public static int AP_STATE_ENABLING = 12;
-    public static int AP_STATE_ENABLED = 13;
-    public static int AP_STATE_FAILED = 14;
+    // region Query results constants.
+    public final static int AP_STATE_DISABLING = 10;
+    public final static int AP_STATE_DISABLED = 11;
+    public final static int AP_STATE_ENABLING = 12;
+    public final static int AP_STATE_ENABLED = 13;
+    public final static int AP_STATE_FAILED = 14;
+    // endregion
 
+    // Singleton instance:
     private static HotspotStatus INSTANCE;
 
-    private WifiManager man;
-    private Method method_getWifiApState = null;
+    // region Fields.
+    public WifiManager man;
+    public Method method_getWifiApState = null;
+    // endregion
 
+    // "Status" enum.
     /*
     public enum Status {
         AP_STATE_DISABLING(10),
@@ -69,24 +75,24 @@ public class HotspotStatus {
     }
 
     // region Queries!
-    public boolean isBeingEnabled() {
-        return this.query() == HotspotStatus.AP_STATE_ENABLING;
+    public static boolean isBeingEnabled() {
+        return HotspotStatus.INSTANCE.query() == HotspotStatus.AP_STATE_ENABLING;
     }
 
-    public boolean isFailed() {
-        return this.query() == HotspotStatus.AP_STATE_FAILED;
+    public static boolean isFailed() {
+        return HotspotStatus.INSTANCE.query() == HotspotStatus.AP_STATE_FAILED;
     }
 
-    public boolean isEnabled() {
-        return this.query() == HotspotStatus.AP_STATE_ENABLED;
+    public static boolean isEnabled() {
+        return HotspotStatus.INSTANCE.query() == HotspotStatus.AP_STATE_ENABLED;
     }
 
-    public boolean isBeingDisabled() {
-        return this.query() == HotspotStatus.AP_STATE_DISABLED;
+    public static boolean isBeingDisabled() {
+        return HotspotStatus.INSTANCE.query() == HotspotStatus.AP_STATE_DISABLED;
     }
 
-    public boolean isDisabled() {
-        return this.query() == HotspotStatus.AP_STATE_DISABLING;
+    public static boolean isDisabled() {
+        return HotspotStatus.INSTANCE.query() == HotspotStatus.AP_STATE_DISABLING;
     }
     // endregion
 }

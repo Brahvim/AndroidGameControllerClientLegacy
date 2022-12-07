@@ -11,11 +11,12 @@
             Searching your network for servers...
         </string>
 
-    <string name="loadScene_press_for_hotspot">
-            Press a finger onto the screen for using mobile hotspot for the scan instead.
+    <string name="loadScene_how_to_net">
+            Keep this device and the PC on the same network!\n
+            Use WiFi or mobile hotspot, the app checks both! ;)
         </string>
 
-    <string name="loadScene_no_wifi" formatted="true">
+    <string name="loadScene_no_network" formatted="true">
             No networks.
         </string>
     <!-- endregion -->
