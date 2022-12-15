@@ -428,11 +428,55 @@ public class SketchWithScenes extends Sketch {
         int waveEndMillis;
         SineWave fadeWave;
 
+        // region This isn't in a class.
+        // ...note that these are basically just offsets from the center.
+        PVector yesPos = new PVector(), noPos = new PVector(), setPos = new PVector();
+
         // "Dy" AKA "Dynamic":
-        PVector yesPos = new PVector(), noPos = new PVector();
-        PVector yesPosDy = new PVector(), noPosDy = new PVector();
-        boolean yesPressed, noPressed, canFillButtonColors;
-// endregion
+        PVector yesPosDy = new PVector(), noPosDy = new PVector(), setPosDy = new PVector();
+
+        boolean yesPressed, noPressed, setPressed, canFillButtonColors;
+        // endregion
+
+        // Giving up on class "HoldableText" for performance. There'll be only 3 instances anyway.
+        /*
+        class HoldableText {
+            private final static ArrayList<HoldableText> INSTANCES = new ArrayList<>(3);
+            public PVector pos;
+
+            private SineWave fadeWave;
+            private boolean pressed;
+            private String text;
+
+            public HoldableText(PVector p_pos, String p_text) {
+                this.pos = p_pos;
+                this.text = p_text;
+            }
+
+            public HoldableText(float p_x, float p_y, String p_text) {
+                this.pos = new PVector(p_x, p_y);
+                this.text = p_text;
+            }
+
+            public void draw() {
+                pushMatrix();
+                pushStyle();
+
+                popStyle();
+                popMatrix();
+            }
+
+            public boolean isTouching(PVector p_touch) {
+                return true;
+            }
+
+            public static void buttonCheck() {
+                for (HoldableText t : HoldableText.INSTANCES) {
+                    t.pressed = t.isTouching(Sketch.listOfUnprojectedTouches.get(0));
+                }
+            }
+        }
+         */
 
         @Override
         public void setup() {
@@ -449,12 +493,14 @@ public class SketchWithScenes extends Sketch {
 
             this.yesPos.set(-qx + 100, qy * 0.5f);
             this.noPos.set(qx - 100, this.yesPos.y);
+            this.setPos.set(0, this.yesPos.y);
 
             this.canFillButtonColors = false;
 
             // These could be `true`, since the scene object retains information!
             //this.yesPressed = false; // Of course this one can't!
             this.noPressed = false;
+            this.setPressed = false;
         }
 
         @Override
@@ -477,6 +523,9 @@ public class SketchWithScenes extends Sketch {
 
             this.yesPosDy.x = cx + this.yesPos.x;
             this.yesPosDy.y = yPos + this.yesPos.y;
+
+            this.setPosDy.x = cx + this.setPos.x;
+            this.setPosDy.y = yPos + this.setPos.y;
 
             pushMatrix();
             translate(cx, yPos);
@@ -508,9 +557,18 @@ public class SketchWithScenes extends Sketch {
             fill(0, 64, 214, alpha);
             if (this.canFillButtonColors && this.noPressed)
                 fill(0, 214, 64, alpha);
-            text(MainActivity.appAct.getString(R.string.exitScene_no), this.noPosDy.x,
-              this.noPosDy.y);
+            text(MainActivity.appAct.getString(R.string.exitScene_no),
+              this.noPosDy.x, this.noPosDy.y);
             // endregion
+
+            // region "Configure" - brings up the editor scene:
+            fill(0, 64, 214, alpha);
+            if (this.canFillButtonColors && this.setPressed)
+                fill(214, 214, 64, alpha);
+            text(MainActivity.appAct.getString(R.string.exitScene_set),
+              this.setPosDy.x, this.setPosDy.y);
+            // endregion
+
             // endregion
         }
 
@@ -525,12 +583,20 @@ public class SketchWithScenes extends Sketch {
                 this.yesPosDy.y - this.BOX_GAP,
                 this.yesPosDy.x + this.BOX_GAP,
                 this.yesPosDy.y + this.BOX_GAP);
+
             this.noPressed = CollisionAlgorithms
               .ptRect(touch.x, touch.y,
                 this.noPosDy.x - this.BOX_GAP,
                 this.noPosDy.y - this.BOX_GAP,
                 this.noPosDy.x + this.BOX_GAP,
                 this.noPosDy.y + this.BOX_GAP);
+
+            this.setPressed = CollisionAlgorithms
+              .ptRect(touch.x, touch.y,
+                this.setPosDy.x - this.BOX_GAP,
+                this.setPosDy.y - this.BOX_GAP,
+                this.setPosDy.x + this.BOX_GAP,
+                this.setPosDy.y + this.BOX_GAP);
         }
 
         // region Events.
@@ -560,6 +626,10 @@ public class SketchWithScenes extends Sketch {
             if (this.noPressed) {
                 Scene.setScene(Scene.getPreviousScene());
             }
+
+            if (this.setPressed) {
+                Scene.setScene(editorScene);
+            }
         }
 
         @Override
@@ -567,6 +637,24 @@ public class SketchWithScenes extends Sketch {
             completeExit();
         }
         // endregion
+    };
+
+    // Load up the last used configuration
+    // into `ClientRenderers.all`, receive changes,
+    // ..save 'em new changes to another file or something!
+    Scene editorScene = new Scene() {
+        @Override
+        public void setup() {
+        }
+
+        @Override
+        public void draw() {
+        }
+
+        @Override
+        public void onBackPressed() {
+            Scene.setScene(Scene.getPreviousScene());
+        }
     };
 
     // region `backgroundWithAlpha()` overloads.

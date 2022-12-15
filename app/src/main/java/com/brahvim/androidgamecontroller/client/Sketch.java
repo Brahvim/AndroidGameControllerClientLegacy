@@ -28,6 +28,7 @@ public class Sketch extends PApplet {
 
     // region Boilerplate-y stuff.
     public static final ArrayList<PVector> listOfUnprojectedTouches = new ArrayList<>(10);
+    public static ArrayList<PVector> plistOfUnprojectedTouches = new ArrayList<>(10);
     // ^^^ Funny how `ArrayList`s have a capacity of `10` by default, haha.
     public PGraphicsOpenGL glGraphics;
     public float frameStartTime, pframeTime, frameTime;
@@ -155,6 +156,8 @@ public class Sketch extends PApplet {
                 popMatrix();
             } else println("Current scene is `null`!");
         }
+
+        Sketch.plistOfUnprojectedTouches = Sketch.listOfUnprojectedTouches;
     }
 
     // region Custom methods.

@@ -86,7 +86,7 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
     }
 
     public void draw(@NotNull PGraphics p_graphics) {
-        // this.state.ppressed = this.state.pressed; // Nope! The impl. handles this!
+        // super.state.ppressed = super.state.pressed; // Nope! The impl. handles this!
 
         p_graphics.pushMatrix();
         p_graphics.pushStyle();
@@ -116,7 +116,7 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
                 break;
         }
 
-        p_graphics.fill(230, this.state.pressed? 100 : 50);
+        p_graphics.fill(230, super.state.pressed? 100 : 50);
         p_graphics.noStroke();
 
         p_graphics.beginShape(PConstants.POLYGON);
@@ -134,42 +134,40 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
     }
 
     private void recordTouch() {
-        this.state.pressed = false;
+        super.state.pressed = false;
 
         for (PVector v : Sketch.listOfUnprojectedTouches) {
             super.state.pressed = this.colFxn.check(v, super.config.scale, super.config.transform);
-            if (this.state.pressed)
+            if (super.state.pressed)
                 break;
         }
     }
 
     private void sendStateIfChanged() {
-        this.state.controlNumber = this.config.controlNumber;
-
         // If the state didn't change, let's go back!:
-        if (this.state.ppressed == this.state.pressed)
+        if (super.state.ppressed == super.state.pressed)
             return;
 
         System.out.printf("`%s` DPAD's state changed, sending it over...\n",
           this.config.dir.toString());
         //System.out.printf("It was previously %s pressed and is now %spressed.\n",
-        //this.state.ppressed? "" : "not ",
-        //this.state.pressed? "" : "not ");
+        //super.state.ppressed? "" : "not ",
+        //super.state.pressed? "" : "not ");
 
-        Sketch.socket.send(ByteSerial.encode(this.state),
+        Sketch.socket.send(ByteSerial.encode(super.state),
           Sketch.serverIp, RequestCode.SERVER_PORT);
     }
 
     // region Touch events.
     public void touchStarted() {
-        this.state.ppressed = this.state.pressed;
+        super.state.ppressed = super.state.pressed;
         this.recordTouch();
         this.sendStateIfChanged();
     }
 
     public void touchMoved() {
         // Record previous state:
-        this.state.ppressed = this.state.pressed;
+        super.state.ppressed = super.state.pressed;
 
         // Get current state:
         this.recordTouch();
@@ -179,7 +177,7 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
     }
 
     public void touchEnded() {
-        this.state.ppressed = this.state.pressed;
+        super.state.ppressed = super.state.pressed;
         this.recordTouch();
         this.sendStateIfChanged();
     }

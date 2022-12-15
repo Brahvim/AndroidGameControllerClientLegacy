@@ -43,8 +43,6 @@ public class ThumbstickRendererForClient extends ThumbstickRendererBase implemen
     }
 
     private void sendStateIfChanged() {
-        this.state.controlNumber = this.config.controlNumber;
-
         // If the state didn't change, let's go back!:
         if (this.state.ppressed == this.state.pressed)
             return;

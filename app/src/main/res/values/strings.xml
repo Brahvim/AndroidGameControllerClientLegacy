@@ -11,23 +11,23 @@
             Searching your network for servers...
         </string>
 
-    <string name="loadScene_how_to_net">
+    <string name="loadScene_how_to_net" formatted="true">
             Keep this device and the PC on the same network!\n
             Use WiFi or mobile hotspot, the app checks both! ;)
         </string>
 
-    <string name="loadScene_no_network" formatted="true">
-            No networks.
-        </string>
+    <string name="loadScene_no_network">No networks.</string>
     <!-- endregion -->
 
     <!-- region `exitScene` -->
-    <string name="exitScene_prompt">
+    <string name="exitScene_prompt" formatted="true">
         Are you sure you want to\n
         exit AndroidGameController?
     </string>
 
     <string name="exitScene_yes">Exit.</string>
+
+    <string name="exitScene_set">Configure</string>
 
     <string name="exitScene_no">Wait!</string>
     <!-- endregion -->

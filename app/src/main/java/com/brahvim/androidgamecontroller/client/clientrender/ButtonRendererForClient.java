@@ -47,8 +47,6 @@ public class ButtonRendererForClient extends ButtonRendererBase implements Clien
     }
 
     private void sendStateIfChanged() {
-        super.state.controlNumber = super.config.controlNumber;
-
         // If the state didn't change, let's go back!:
         if (super.state.ppressed == super.state.pressed)
             return;
