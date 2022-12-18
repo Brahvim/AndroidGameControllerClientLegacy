@@ -38,8 +38,7 @@ public class AgcClientSocket extends UdpSocket {
         }
 
         super.send(toSend, p_ip, p_port);
-        System.out.printf("Sent code `%s` to IP: `%s`, port: `%d`.\n", p_code, p_ip,
-          p_port);
+        //System.out.printf("Sent code `%s` to IP: `%s`, port: `%d`.\n", p_code, p_ip, p_port);
     }
 
     public void sendCode(RequestCode p_code, String p_extraData, String p_ip, int p_port) {
@@ -84,8 +83,8 @@ public class AgcClientSocket extends UdpSocket {
         }
 
         super.send(toSend, p_ip, p_port);
-        System.out.printf("Sent `%s` to IP: `%s`, port: `%d`.\n",
-          new String(toSend).replace('\n', '\0'), p_ip, p_port);
+        //System.out.printf("Sent `%s` to IP: `%s`, port: `%d`.\n",
+        // new String(toSend).replace('\n', '\0'), p_ip, p_port);
     }
     // endregion
 
@@ -99,7 +98,7 @@ public class AgcClientSocket extends UdpSocket {
     // region Non-so-important Overrides.
     @Override
     protected void onStart() {
-        System.out.println("The socket has begun, boiiii!");
+        System.out.println("The socket has begun!");
         System.out.printf("Socket-Stats!:\n\t- IP: `%s`\n\t- Port: `%d`\n", super.getIp(),
           super.getPort());
     }

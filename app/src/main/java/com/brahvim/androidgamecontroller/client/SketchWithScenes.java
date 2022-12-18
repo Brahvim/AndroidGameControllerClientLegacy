@@ -33,6 +33,7 @@ public class SketchWithScenes extends Sketch {
         Scene.setScene(loadScene);
     }
 
+    // region Scene 'defs'!
     Scene loadScene = new Scene() {
         final int ADD_ME_REQUEST_INTERVAL = 4;
         int startFrame;
@@ -382,7 +383,7 @@ public class SketchWithScenes extends Sketch {
                 ClientRenderer.all.get(i).touchEnded();
         }
 // endregion
-// endregion
+        // endregion
 
         @Override
         public void onReceive(byte[] p_data, String p_ip, int p_port) {
@@ -436,6 +437,7 @@ public class SketchWithScenes extends Sketch {
         PVector yesPosDy = new PVector(), noPosDy = new PVector(), setPosDy = new PVector();
 
         boolean yesPressed, noPressed, setPressed, canFillButtonColors;
+        // endregion
         // endregion
 
         // Giving up on class "HoldableText" for performance. There'll be only 3 instances anyway.
@@ -568,8 +570,8 @@ public class SketchWithScenes extends Sketch {
             text(MainActivity.appAct.getString(R.string.exitScene_set),
               this.setPosDy.x, this.setPosDy.y);
             // endregion
-
             // endregion
+
         }
 
         public void buttonCheck() {
@@ -656,6 +658,7 @@ public class SketchWithScenes extends Sketch {
             Scene.setScene(Scene.getPreviousScene());
         }
     };
+    // endregion
 
     // region `backgroundWithAlpha()` overloads.
     void backgroundWithAlpha(float p_grey, float p_alpha) {
@@ -675,7 +678,7 @@ public class SketchWithScenes extends Sketch {
         pushStyle();
         popMatrix();
     }
-// endregion
+    // endregion
 
     // region Stuff that helps AGC exit.
     public void agcExit() {

@@ -11,9 +11,25 @@ import com.brahvim.androidgamecontroller.serial.configs.ButtonConfig;
 import processing.core.PVector;
 
 public class ButtonRendererForClient extends ButtonRendererBase implements ClientRenderer {
+    private PVector colStart, colEnd; // Collision info, cached.
+
+    // TODO: make a class specific to only round buttons!
+    //  Their configuration information could then have just the transform and radius...
+
     public ButtonRendererForClient(ButtonConfig p_config) {
         super(p_config);
         ClientRenderer.all.add(this);
+
+        PVector transform = super.config.transform,
+          scale = super.config.scale;
+
+        this.colEnd = new PVector(
+          transform.x + (scale.x * 0.5f),
+          transform.y + (scale.y * 0.5f));
+
+        this.colStart = new PVector(
+          transform.x - (scale.x * 0.5f),
+          transform.y - (scale.y * 0.5f));
     }
 
     // No `draw()` - it is inherited.
@@ -26,19 +42,11 @@ public class ButtonRendererForClient extends ButtonRendererBase implements Clien
                 case ROUND -> super.state.pressed = CollisionAlgorithms
                   .ptCircle(v, super.config.transform, super.config.scale.x);
 
-                case RECTANGLE -> {
-                    PVector transform = super.config.transform,
-                      scale = super.config.scale;
-
-                    super.state.pressed = CollisionAlgorithms
-                      .ptRect(v.x, v.y,
-                        transform.x - (scale.x * 0.5f),
-                        transform.y - (scale.y * 0.5f),
-                        transform.x + (scale.x * 0.5f),
-                        transform.y + (scale.y * 0.5f));
-                }
+                case RECTANGLE -> super.state.pressed = CollisionAlgorithms
+                  .ptRect(v, this.colStart, this.colEnd);
             }
 
+            // Break out! We don't want other failing tests to affect this!:
             if (super.state.pressed)
                 break;
         }

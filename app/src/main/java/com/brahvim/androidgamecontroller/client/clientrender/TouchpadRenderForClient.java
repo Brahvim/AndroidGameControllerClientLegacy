@@ -1,6 +1,8 @@
 package com.brahvim.androidgamecontroller.client.clientrender;
 
 import com.brahvim.androidgamecontroller.RequestCode;
+import com.brahvim.androidgamecontroller.client.CollisionAlgorithms;
+import com.brahvim.androidgamecontroller.client.MainActivity;
 import com.brahvim.androidgamecontroller.client.Sketch;
 import com.brahvim.androidgamecontroller.render.TouchpadRendererBase;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
@@ -11,6 +13,9 @@ import processing.core.PVector;
 public class TouchpadRenderForClient extends TouchpadRendererBase implements ClientRenderer {
     //private int pTouchCount; // No stupid optimizations.
     private TrackingPolicy trackingPolicy = TrackingPolicy.FIRST;
+    private PVector colStart, colEnd, lastTouch;
+    private int lastTouchMillis;
+    private final int DOUBLE_TAP_THRESHOLD = 1000;
 
     // TODO: Make a variation of a touchpad allowing the PC screen to act like a touch screen,
     //  and not just a mouse-only touchpad! (Sadly, this is where screencasting makes sense!)
@@ -26,68 +31,97 @@ public class TouchpadRenderForClient extends TouchpadRendererBase implements Cli
     public TouchpadRenderForClient(TouchpadConfig p_config) {
         super(p_config);
         ClientRenderer.all.add(this);
+
+        PVector transform = super.config.transform,
+          scale = super.config.scale;
+
+        this.colEnd = new PVector(
+          transform.x + (scale.x * 0.75f),
+          transform.y + (scale.y * 0.25f));
+
+        this.colStart = new PVector(
+          transform.x - (scale.x * 0.625f),
+          transform.y - (scale.y * 0.28125f));
     }
 
-    private void sendStateIfChanged() {
+    private void sendState() {
         // TODO: Make the touchpad respond to two-finger taps as a right-click, otherwise, let it
         //  respond only to single-taps.
         // ^^^ The tab is necessary in comments that 'continue'!
 
-        System.out.println("A touchpad's state changed, sending it over...");
+        //System.out.println("A touchpad's state changed, sending it over...");
 
         //if (super.state.pressed != super.state.ppressed)
         //System.out.printf("It was previously %s pressed and is now %spressed.\n",
         //super.state.ppressed? "" : "not ",
         //super.state.pressed? "" : "not ");
 
-        Sketch.socket.send(ByteSerial.encode(super.state),
+        Sketch.socket.send(
+          ByteSerial.encode(super.state),
           Sketch.serverIp, RequestCode.SERVER_PORT);
     }
 
-    private void recordTouch() {
+    private void recordTouches() {
+        super.state.ppressed = super.state.pressed;
+
         int listSize = Sketch.listOfUnprojectedTouches.size();
-        if (listSize == 0)
+        if (listSize == 0) {
+            super.state.pressed = false;
             return;
+        }
 
         switch (this.trackingPolicy) {
-            case FIRST:
-                super.state.mouse.set(Sketch.listOfUnprojectedTouches.get(0));
-                break;
-
-            case LAST:
-                super.state.mouse.set(Sketch.listOfUnprojectedTouches.get(listSize - 1));
-                break;
-
-            case MID:
-                PVector mid = new PVector();
-
+            case FIRST -> super.state.mouse.set(Sketch.listOfUnprojectedTouches.get(0));
+            case LAST -> super.state.mouse.set(Sketch.listOfUnprojectedTouches.get(listSize - 1));
+            case MID -> {
+                if (listSize == 1) {
+                    super.state.mouse.set(Sketch.listOfUnprojectedTouches.get(0));
+                    return;
+                }
+                PVector mid = super.state.mouse.set(0, 0, 0);
                 for (int i = 0; i < listSize; i++) {
                     mid.add(Sketch.listOfUnprojectedTouches.get(i));
                 }
-
                 mid.div(listSize);
-                break;
-
-            default:
+            }
+            //default -> { }
         }
+
+        super.state.pressed = CollisionAlgorithms.ptRect(
+          super.state.mouse, this.colStart, this.colEnd) &&
+          MainActivity.sketch.mousePressed;
     }
 
     // region Touch events.
     public void touchStarted() {
+        if (Sketch.listOfUnprojectedTouches.size() == 0)
+            return;
+
+        if (super.state.pressed) {
+            this.lastTouch = Sketch.listOfUnprojectedTouches.get(0);
+            this.lastTouchMillis = MainActivity.sketch.millis();
+        }
+
+        super.state.pdoubleTapped = super.state.doubleTapped;
+        if (this.lastTouchMillis < this.DOUBLE_TAP_THRESHOLD)
+            super.state.doubleTapped = true;
+        else super.state.doubleTapped = false;
+
         // Get current state:
-        this.recordTouch();
+        this.recordTouches();
 
         // If changes took place, send 'em over! ":D
-        this.sendStateIfChanged();
+        this.sendState();
     }
 
     public void touchMoved() {
-        this.recordTouch();
-        this.sendStateIfChanged();
+        this.recordTouches();
+        this.sendState();
     }
 
     public void touchEnded() {
-        this.sendStateIfChanged();
+        this.recordTouches();
+        this.sendState();
     }
     // endregion
 

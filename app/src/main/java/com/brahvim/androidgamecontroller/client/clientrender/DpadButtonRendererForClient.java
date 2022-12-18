@@ -83,6 +83,7 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
                 };
                 break;
         }
+
     }
 
     public void draw(@NotNull PGraphics p_graphics) {
@@ -148,8 +149,9 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
         if (super.state.ppressed == super.state.pressed)
             return;
 
-        System.out.printf("`%s` DPAD's state changed, sending it over...\n",
-          this.config.dir.toString());
+        //System.out.printf("`%s` DPAD's state changed, sending it over...\n",
+        //this.config.dir.toString());
+
         //System.out.printf("It was previously %s pressed and is now %spressed.\n",
         //super.state.ppressed? "" : "not ",
         //super.state.pressed? "" : "not ");

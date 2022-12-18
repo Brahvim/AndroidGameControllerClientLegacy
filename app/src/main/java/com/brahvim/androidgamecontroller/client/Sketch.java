@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.WindowManager;
 
 import com.brahvim.androidgamecontroller.RequestCode;
+import com.brahvim.androidgamecontroller.serial.configs.AgcConfigurationPacket;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -19,6 +20,7 @@ import processing.opengl.PGraphicsOpenGL;
 public class Sketch extends PApplet {
     // region Fields! ":D!~
     public static float refreshRate;
+    public static AgcConfigurationPacket config = new AgcConfigurationPacket();
 
     // region Stuff that makes AGC *GO!*:
     public static AgcClientSocket socket;
@@ -45,9 +47,11 @@ public class Sketch extends PApplet {
         fullScreen(P3D);
     }
 
-//    public static void main(String[] args) {
-//        System.out.println("Android is SO broken...");
-//    }
+    public static void main(String[] args) {
+        System.out.println("""
+          Hey! You see where it says he name of the connected device up there? d
+          Click the option right beside it! Select "app"!""");
+    }
 
     @Override
     public void setup() {
@@ -97,15 +101,56 @@ public class Sketch extends PApplet {
         q3y = cy + qy;
     }
 
+    // Both projection and mapping are inaccurate...
+    // (...with the `Unprojector` class turning out as useless...)
+    // ...but I use mapping!:
     public static void unprojectTouches() {
         Sketch.listOfUnprojectedTouches.clear();
         TouchEvent.Pointer[] touches = MainActivity.sketch.touches;
 
         for (int i = 0; i < touches.length; i++) {
+            // [WORKS, CHEAPEST, SAME LEVEL OF ACCURACY]
+            // My own 'mapping' method!:
+            /*
+            PVector u = new PVector(
+              PApplet.map(touches[i].x, 0, MainActivity.sketch.displayWidth,
+                0, MainActivity.sketch.width),
+              PApplet.map(touches[i].y, 0, MainActivity.sketch.displayHeight,
+                0, MainActivity.sketch.height));
+             */
+            //u.add(MainActivity.sketch.cameraPos);
+
+            // [WORKS, NOT CHEAP + STILL INACCURATE]
+            // Unprojection of my own:
             PVector u = new PVector(touches[i].x, touches[i].y);
-            u = MainActivity.sketch.glGraphics.cameraInv.mult(u, null);
             u = MainActivity.sketch.glGraphics.modelviewInv.mult(u, null);
+            //u = MainActivity.sketch.glGraphics.cameraInv.mult(u, null);
             u.sub(MainActivity.sketch.width, MainActivity.sketch.height);
+            u.add(MainActivity.sketch.cx, MainActivity.sketch.cy);
+
+            // [FAILURE] Unprojection using the `Unprojector` class:
+            /*
+            PVector u = new PVector(touches[i].x, touches[i].y);
+            // Believe in the JIT!~
+            Unprojector.captureViewMatrix(((PGraphics3D)MainActivity.sketch.getGraphics()));
+            System.out.printf("Was unprojection successful? %s\n",
+              Unprojector.gluUnProject(u.x, u.y, u.z, u) // Yes, you can do that. Passing by value.
+                ? "Yes!" : "No...");
+            u.x *= 1.2f; //MainActivity.sketch.qx;
+            u.y *= 1.2f; //MainActivity.sketch.qy;
+             */
+
+            // (...here's longer text explaining that.. :)
+            /*
+            // [sic] "As different streams having their sources in different places all mingles
+            // their water in the sea, so, O Lord, the different paths which men take through
+            // tendencies, various touch as they appear, crooked or straight, all lead to Thee."
+            // - Swami Vivekananda, quoting a hymn in his `1893` Chicago convention speech.
+            // (((I do not guarantee complete correctness in the copying of that quote.)))
+             */
+            // ^^^ (...that basically, this `u.z` modfication will go unchanged,
+            // no matter what un-projection method you use!:)
+            u.z = touches[i].pressure; // Should be accessed in some other way, but whatever...
             Sketch.listOfUnprojectedTouches.add(u);
         }
     }
@@ -140,9 +185,9 @@ public class Sketch extends PApplet {
         frameTime = frameStartTime - pframeTime;
         pframeTime = frameStartTime;
 
-        camera(cameraPos.x, cameraPos.y, cameraPos.z,
-          cameraCenter.x, cameraCenter.y, cameraCenter.z,
-          cameraUp.x, cameraUp.y, cameraUp.z);
+        //camera(cameraPos.x, cameraPos.y, cameraPos.z,
+        //cameraCenter.x, cameraCenter.y, cameraCenter.z,
+        //cameraUp.x, cameraUp.y, cameraUp.z);
         perspective(fov, scr, 0.1f, 10_000);
 
         // Render the current scene!:
@@ -156,6 +201,13 @@ public class Sketch extends PApplet {
                 popMatrix();
             } else println("Current scene is `null`!");
         }
+
+        pushStyle();
+        fill(0, 255, 0);
+        for (PVector v : Sketch.listOfUnprojectedTouches) {
+            ellipse(v.x, v.y, 20, 20);
+        }
+        popStyle();
 
         Sketch.plistOfUnprojectedTouches = Sketch.listOfUnprojectedTouches;
     }
