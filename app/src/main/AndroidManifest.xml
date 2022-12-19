@@ -3,9 +3,14 @@
         xmlns:tools="http://schemas.android.com/tools"
         package="com.brahvim.androidgamecontroller.client">
 
+    <!-- region App permissions. -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <!--    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />-->
+    <!--<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />-->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- endregion -->
 
     <application
             android:allowBackup="true"
@@ -17,14 +22,19 @@
             android:roundIcon="@mipmap/agc_icon_round"
             android:supportsRtl="true"
             android:theme="@style/Theme.AndroidGameController">
+
         <activity
                 android:exported="true"
                 android:screenOrientation="landscape"
                 android:name="com.brahvim.androidgamecontroller.client.MainActivity">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
+
     </application>
+
 </manifest>

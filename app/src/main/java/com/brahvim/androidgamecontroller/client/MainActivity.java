@@ -3,6 +3,7 @@ package com.brahvim.androidgamecontroller.client;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.StrictMode;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -12,10 +13,20 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.brahvim.androidgamecontroller.serial.configs.AgcConfigurationPacket;
 
+import java.io.File;
+
 import processing.android.CompatUtils;
 import processing.android.PFragment;
 
 public class MainActivity extends AppCompatActivity {
+    public final static String AGC_VERSION = "v1.0.0";
+
+    public static File AGC_DIR = new File(Environment
+      .getExternalStorageDirectory()
+      .getAbsolutePath()
+      .concat("AndroidGameController")
+      .concat(MainActivity.AGC_VERSION.replace('.', '_')));
+    public static boolean inSession = false;
     public static AppCompatActivity appAct;
     public static SketchWithScenes sketch;
     public static PFragment fragment;

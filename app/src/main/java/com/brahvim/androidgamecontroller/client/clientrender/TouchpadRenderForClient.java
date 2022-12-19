@@ -62,11 +62,11 @@ public class TouchpadRenderForClient extends TouchpadRendererBase implements Cli
         }
 
         switch (this.trackingPolicy) {
-            case FIRST -> super.state.mouse.set(Sketch.listOfUnprojectedTouches.get(0));
+            case FIRST -> super.state.mouse.set(Sketch.mouse);
             case LAST -> super.state.mouse.set(Sketch.listOfUnprojectedTouches.get(listSize - 1));
             case MID -> {
                 if (listSize == 1) {
-                    super.state.mouse.set(Sketch.listOfUnprojectedTouches.get(0));
+                    super.state.mouse.set(Sketch.mouse);
                     return;
                 }
                 PVector mid = super.state.mouse.set(0, 0, 0);

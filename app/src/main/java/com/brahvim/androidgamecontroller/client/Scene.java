@@ -3,12 +3,12 @@ package com.brahvim.androidgamecontroller.client;
 import java.util.ArrayList;
 
 public class Scene {
-    public final static ArrayList<Scene> SCENES = new ArrayList<Scene>(3);
+    public final static ArrayList<Scene> SCENES = new ArrayList<>(3);
     private static Scene currentScene, previousScene;
 
     // region "`static`s".
     public static void setScene(Scene p_scene) {
-        Scene.previousScene = currentScene;
+        Scene.previousScene = Scene.currentScene;
         Scene.currentScene = p_scene;
         p_scene.setup();
     }
@@ -85,6 +85,7 @@ public class Scene {
     }
     // endregion
 
+    // region Touch events.
     public void touchStarted(processing.event.TouchEvent p_touchEvent) {
     }
 
@@ -93,6 +94,7 @@ public class Scene {
 
     public void touchEnded(processing.event.TouchEvent p_touchEvent) {
     }
+    // endregion
 
     // region Activity events.
     public void onBackPressed() {

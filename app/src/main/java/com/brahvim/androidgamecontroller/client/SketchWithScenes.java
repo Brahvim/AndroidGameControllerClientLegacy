@@ -20,6 +20,7 @@ import com.brahvim.androidgamecontroller.serial.configs.DpadButtonConfig;
 import com.brahvim.androidgamecontroller.serial.configs.ThumbstickConfig;
 import com.brahvim.androidgamecontroller.serial.configs.TouchpadConfig;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import processing.core.PConstants;
@@ -32,6 +33,15 @@ public class SketchWithScenes extends Sketch {
     void appStart() {
         Scene.setScene(loadScene);
     }
+
+    // Scene flow:
+
+    // `loadScene` -> `workScene`
+    // `loadScene` -> `configSelectionScene` -> `loadScene` -> `workScene`
+
+    // `loadScene` -> `configSelectionScene` -> `editorScene` -> `workScene`
+    // `loadScene` -> `configSelectionScene` -> `editorScene` -> `controlChoiceScene` -> `workScene`
+
 
     // region Scene 'defs'!
     Scene loadScene = new Scene() {
@@ -97,7 +107,7 @@ public class SketchWithScenes extends Sketch {
             float welcomeTextWave = this.welcomeTextWave.get();
             fill(255, welcomeTextWave * 255);
             text(MainActivity.appAct.getString(R.string.loadScene_welcome),
-              cx, cy - (welcomeTextWave * qy));
+              Sketch.cx, Sketch.cy - (welcomeTextWave * Sketch.qy));
 
             if (this.noCon) {
                 // If we WERE connected previously,
@@ -135,11 +145,12 @@ public class SketchWithScenes extends Sketch {
                 fill(200, 100, 100);
                 textSize(48 + this.searchTextWave.get() * 20);
                 text(MainActivity.appAct.getString(R.string
-                  .loadScene_no_network), cx, cy);
+                  .loadScene_no_network), Sketch.cx, Sketch.cy);
 
                 fill(255);
                 textSize(24);
-                text(MainActivity.appAct.getString(R.string.loadScene_how_to_net), cx, q3y);
+                text(MainActivity.appAct.getString(R.string.loadScene_how_to_net), Sketch.cx,
+                  Sketch.q3y);
             } else {
                 // If there previously was no connection,
                 if (this.pnoCon) {
@@ -151,13 +162,13 @@ public class SketchWithScenes extends Sketch {
                 textSize(48);
                 fill(255, this.searchTextWave.get() * 255);
                 text(MainActivity.appAct.getString(R.string
-                  .loadScene_looking_for_servers), cx, cy);
+                  .loadScene_looking_for_servers), Sketch.cx, Sketch.cy);
             }
 
             textSize(24);
             fill(255, abs(this.hotspotTextWave.get() * 255));
             text(MainActivity.appAct.getString(R.string
-              .loadScene_how_to_net), cx, q3y);
+              .loadScene_how_to_net), Sketch.cx, Sketch.q3y);
             // endregion
 
         }
@@ -187,16 +198,16 @@ public class SketchWithScenes extends Sketch {
                 float gap1 = textAscent() - textDescent() * 12;
 
                 text(MainActivity.appAct.getString(
-                  R.string.loadScene_hotspot_mode_title), cx, cy);
+                  R.string.loadScene_hotspot_mode_title), Sketch.cx, Sketch.cy);
 
                 textSize(Sketch.DEFAULT_FONT_SIZE * 0.75f);
                 text(MainActivity.appAct.getString(
-                  R.string.loadScene_hotspot_mode_description), cx, cy - gap1);
+                  R.string.loadScene_hotspot_mode_description), Sketch.cx, Sketch.cy - gap1);
             } else {
                 textSize(Sketch.DEFAULT_FONT_SIZE);
                 text(MainActivity.appAct.getString(
                   noServers? R.string.loadScene_no_wifi
-                    : R.string.loadScene_looking_for_servers), cx, cy);
+                    : R.string.loadScene_looking_for_servers), Sketch.cx, Sketch.cy);
 
                 if (!noServers) {
                     float gap1 = textAscent() - textDescent() * 16;
@@ -204,7 +215,7 @@ public class SketchWithScenes extends Sketch {
 
                     text(MainActivity.appAct.getString(
                         R.string.loadScene_press_for_hotspot),
-                      cx, cy - gap1);
+                      Sketch.cx, Sketch.cy - gap1);
                 }
 
             } // End of `hotspotMode` check.
@@ -223,7 +234,7 @@ public class SketchWithScenes extends Sketch {
                 switch (code) {
                     case CLIENT_WAS_REGISTERED:
                         serverIp = p_ip;
-                        SketchWithScenes.super.inSession = true;
+                        MainActivity.inSession = true;
                         Scene.setScene(workScene);
                         break;
 
@@ -241,7 +252,7 @@ public class SketchWithScenes extends Sketch {
         public void sendAddMeRequest(boolean p_hotspotMode, ArrayList<String> p_networks) {
             if (p_hotspotMode) {
                 // Send an `ADD_ME` request to all servers on the LAN!~:
-                if (!(p_networks == null || SketchWithScenes.super.inSession)) {
+                if (!(p_networks == null || MainActivity.inSession)) {
                     for (String ip : p_networks)
                         socket.sendCode(RequestCode.ADD_ME,
                           // Manufacturer-assigned name, IP and port!:
@@ -298,14 +309,14 @@ public class SketchWithScenes extends Sketch {
             // region Making buttons!
             this.buttonRenderers.add(new ButtonRendererForClient(
               this.config.addConfig(new ButtonConfig(
-                new PVector(q3x - 90, q3y + 50),
+                new PVector(Sketch.q3x - 90, Sketch.q3y + 50),
                 new PVector(150, 150),
                 "A"))
             ));
 
             this.buttonRenderers.add(new ButtonRendererForClient(
               this.config.addConfig(new ButtonConfig(
-                new PVector(q3x + 90, q3y + 50),
+                new PVector(Sketch.q3x + 90, Sketch.q3y + 50),
                 new PVector(150, 150),
                 "B"))
             ));
@@ -314,14 +325,14 @@ public class SketchWithScenes extends Sketch {
             // region Making DPAD buttons!
             this.dpadButtonRenderers.add(new DpadButtonRendererForClient(
               this.config.addConfig(new DpadButtonConfig(
-                new PVector(qx - 80, q3y),
+                new PVector(Sketch.qx - 80, Sketch.q3y),
                 new PVector(100, 100),
                 DpadDirection.LEFT))
             ));
 
             this.dpadButtonRenderers.add(new DpadButtonRendererForClient(
               this.config.addConfig(new DpadButtonConfig(
-                new PVector(qx + 80, q3y),
+                new PVector(Sketch.qx + 80, Sketch.q3y),
                 new PVector(100, 100),
                 DpadDirection.RIGHT))
             ));
@@ -331,7 +342,7 @@ public class SketchWithScenes extends Sketch {
             this.touchpadRenderers.add(new TouchpadRenderForClient(
               this.config.addConfig(new TouchpadConfig(
                 new PVector(600, 800),
-                new PVector(q3x, qy)
+                new PVector(Sketch.q3x, Sketch.qy)
               ))));
             // endregion
 
@@ -339,7 +350,7 @@ public class SketchWithScenes extends Sketch {
             this.thumbstickRenderers.add(new ThumbstickRendererForClient(
               this.config.addConfig(new ThumbstickConfig(
                 new PVector(80, 80),
-                new PVector(qx, qy)
+                new PVector(Sketch.qx, Sketch.qy)
               ))
             ));
             // endregion
@@ -384,13 +395,13 @@ public class SketchWithScenes extends Sketch {
             for (int i = 0; i < ClientRenderer.all.size(); i++)
                 ClientRenderer.all.get(i).touchEnded();
         }
-// endregion
+        // endregion
         // endregion
 
         @Override
         public void onReceive(byte[] p_data, String p_ip, int p_port) {
-            System.out.printf("Received *some* bytes from IP: `%s`, on port:`%d`.\n", p_ip,
-              p_port);
+            System.out.printf("Received *some* bytes from IP: `%s`, on port:`%d`.\n",
+              p_ip, p_port);
 
             if (RequestCode.packetHasCode(p_data)) {
                 RequestCode code = RequestCode.fromReceivedPacket(p_data);
@@ -398,7 +409,7 @@ public class SketchWithScenes extends Sketch {
 
                 switch (code) {
                     case SERVER_CLOSE:
-                        MainActivity.sketch.inSession = false;
+                        MainActivity.inSession = false;
                         Scene.setScene(loadScene);
                         break;
 
@@ -427,6 +438,7 @@ public class SketchWithScenes extends Sketch {
         // region Fields (seriously! :|).
         final float TEXT_SCALE = 48; //, TEXT_SCALE_HALF = this.TEXT_SCALE * 0.5f;
         final float BOX_GAP = this.TEXT_SCALE;
+        Scene previousScene;
 
         int waveEndMillis;
         SineWave fadeWave;
@@ -476,7 +488,7 @@ public class SketchWithScenes extends Sketch {
 
             public static void buttonCheck() {
                 for (HoldableText t : HoldableText.INSTANCES) {
-                    t.pressed = t.isTouching(Sketch.listOfUnprojectedTouches.get(0));
+                    t.pressed = t.isTouching(Sketch.mouse);
                 }
             }
         }
@@ -486,6 +498,7 @@ public class SketchWithScenes extends Sketch {
         public void setup() {
             frameRate(Sketch.refreshRate);
 
+            this.previousScene = Scene.getPreviousScene();
             this.fadeWave = new SineWave(MainActivity.sketch, 0.001f);
             this.fadeWave.endWhenAngleIs(90);
             this.fadeWave.start(new Runnable() {
@@ -495,8 +508,9 @@ public class SketchWithScenes extends Sketch {
                 }
             });
 
-            this.yesPos.set(-qx + 100, qy * 0.5f);
-            this.noPos.set(qx - 100, this.yesPos.y);
+            this.yesPos.set(-Sketch.qx + 100, Sketch.qy * 0.5f);
+            this.noPos.set(this.previousScene == editorScene?
+              Sketch.qx - 150 : Sketch.qx - 100, this.yesPos.y);
             this.setPos.set(0, this.yesPos.y);
 
             this.canFillButtonColors = false;
@@ -517,25 +531,25 @@ public class SketchWithScenes extends Sketch {
             textSize(this.TEXT_SCALE * wave);
 
             float yPos = !this.fadeWave.active
-              ? cy + sin((millis() - this.waveEndMillis) * 0.001f) * 25
-              : cy * wave;
+              ? Sketch.cy + sin((millis() - this.waveEndMillis) * 0.001f) * 25
+              : Sketch.cy * wave;
 
             float alpha = wave * 255;
 
-            this.noPosDy.x = cx + this.noPos.x;
+            this.noPosDy.x = Sketch.cx + this.noPos.x;
             this.noPosDy.y = yPos + this.noPos.y;
 
-            this.yesPosDy.x = cx + this.yesPos.x;
+            this.yesPosDy.x = Sketch.cx + this.yesPos.x;
             this.yesPosDy.y = yPos + this.yesPos.y;
 
-            this.setPosDy.x = cx + this.setPos.x;
+            this.setPosDy.x = Sketch.cx + this.setPos.x;
             this.setPosDy.y = yPos + this.setPos.y;
 
             pushMatrix();
-            translate(cx, yPos);
+            translate(Sketch.cx, yPos);
 
             pushMatrix();
-            scale(cx, height);
+            scale(Sketch.cx, height);
             fill(64, alpha);
             rect(0, 0, 1.2f, 0.55f,
               0.1f, 0.1f, 0.1f, 0.1f);
@@ -561,7 +575,15 @@ public class SketchWithScenes extends Sketch {
             fill(0, 64, 214, alpha);
             if (this.canFillButtonColors && this.noPressed)
                 fill(0, 214, 64, alpha);
-            text(MainActivity.appAct.getString(R.string.exitScene_no),
+
+            int noStrId = R.string.exitScene_no;
+
+            if (this.previousScene == editorScene)
+                noStrId = MainActivity.inSession?
+                  R.string.exitScene_back_to_wait :
+                  R.string.exitScene_back_to_work;
+
+            text(MainActivity.appAct.getString(noStrId),
               this.noPosDy.x, this.noPosDy.y);
             // endregion
 
@@ -571,28 +593,24 @@ public class SketchWithScenes extends Sketch {
             if (this.canFillButtonColors && this.setPressed)
                 fill(214, 214, 64, alpha);
 
-            int setStr = 0;
+            int setStrId = R.string.exitScene_set;
 
-            Scene previousScene = Scene.getPreviousScene();
-            if (previousScene == editorScene)
-                setStr = R.string.exitScene_add_control;
-            else if (previousScene == controlChoiceScene)
-                setStr = R.string.exitScene_back_to_editor;
-            else
-                setStr = R.string.exitScene_set;
+            if (this.previousScene == editorScene)
+                setStrId = R.string.exitScene_add_control;
+            else if (this.previousScene == controlChoiceScene)
+                setStrId = R.string.exitScene_back_to_editor;
 
-            text(MainActivity.appAct.getString(setStr),
+            text(MainActivity.appAct.getString(setStrId),
               this.setPosDy.x, this.setPosDy.y);
             // endregion
             // endregion
-
         }
 
         public void buttonCheck() {
             //if (Sketch.listOfUnprojectedTouches.size() == 0)
             //return;
 
-            PVector touch = Sketch.listOfUnprojectedTouches.get(0);
+            PVector touch = Sketch.mouse;
             this.yesPressed = CollisionAlgorithms
               .ptRect(touch.x, touch.y,
                 this.yesPosDy.x - this.BOX_GAP,
@@ -639,7 +657,10 @@ public class SketchWithScenes extends Sketch {
             if (this.yesPressed) {
                 completeExit();
             } else if (this.noPressed) {
-                Scene.setScene(previousScene);
+                if (this.previousScene == editorScene)
+                    Scene.setScene(MainActivity.inSession? workScene : loadScene);
+                else
+                    Scene.setScene(this.previousScene);
             } else if (this.setPressed) {
                 Scene.setScene(previousScene == editorScene? controlChoiceScene : editorScene);
             }
@@ -672,7 +693,14 @@ public class SketchWithScenes extends Sketch {
 
         @Override
         public void onBackPressed() {
-            Scene.setScene(Scene.getPreviousScene());
+            // Let the user work. They'd expect AGC to be smart - gracefully
+            // set the current configuration to be the one they were editing,
+            // then let them do what they *were* doing.
+
+            // In other words, don't drop them back into the decision of
+            // "which confguration to use". They already know.
+            //Scene.setScene(MainActivity.inSession? workScene : loadScene);
+            Scene.setScene(exitScene);
         }
     };
 
@@ -685,66 +713,49 @@ public class SketchWithScenes extends Sketch {
         /*
         ________________________________
         |   Select a control to add:   |
-        |    1     |    2    |    3    |
+        |GitHubLink|    2    |    3    |
         |----------|---------|---------|
-        |GitHubLink|    4    |    5    |
-        |______________________________|
+        |     1    |    4    |    5    |
+        |__________|_________|_________|
         */
+
+        AgcConfigurationPacket config = Sketch.config;
 
         float headingTextY;
         float horizontalGridCenterLineY;
         float verticalGridLine1x, verticalGridLine2x;
         float gridBoxSize, gridBoxHalfSize, gridBoxQuarterSize;
 
-        Rectangle[] allRects = new Rectangle[6];
-
-        class Rectangle {
-            //public PVector center;
-            private PVector start, end;
-
-            public Rectangle(PVector p_start, PVector p_end) {
-                this.end = p_end;
-                this.start = p_start;
-                //this.center = PVector.add(this.start, this.end).mult(0.5f);
-            }
-
-            public Rectangle(float p_startX, float p_startY, float p_endX, float p_endY) {
-                this.end = new PVector(p_endX, p_endY);
-                this.start = new PVector(p_startX, p_startY);
-                //this.center = PVector.add(this.start, this.end).mult(0.5f);
-            }
-
-            public boolean contains(PVector p_point) {
-                return CollisionAlgorithms.ptRect(
-                  p_point, this.start, this.end);
-            }
-        }
+        final AgcRectangle[] allRects = new AgcRectangle[6];
+        int page = 0; // Can have more pages for more controls!
 
         @Override
         public void setup() {
-            this.headingTextY = qy - (qy * 0.5f);
+            this.headingTextY = Sketch.qy - (Sketch.qy * 0.5f);
 
             this.gridBoxSize = width / 3;
             this.gridBoxHalfSize = this.gridBoxSize * 0.5f;
             this.gridBoxQuarterSize = this.gridBoxHalfSize * 0.5f;
 
-            this.horizontalGridCenterLineY = qy + (height - qy) * 0.5f;
+            this.horizontalGridCenterLineY = Sketch.qy + (height - Sketch.qy) * 0.5f;
 
             this.verticalGridLine1x = this.gridBoxSize;
             this.verticalGridLine2x = width - this.verticalGridLine1x;
 
-            float upperColEndY = qy + this.gridBoxHalfSize,
+            float upperColEndY = Sketch.qy + this.gridBoxHalfSize,
               lowerColStartY = upperColEndY + 18,
               secondRectStartX = this.gridBoxSize + 1,
               thirdRectStartX = (this.gridBoxSize + 2) * 2;
 
-            allRects[0] = new Rectangle(0, qy, this.gridBoxSize, upperColEndY);
-            allRects[1] = new Rectangle(secondRectStartX, qy, thirdRectStartX, upperColEndY);
-            allRects[2] = new Rectangle(thirdRectStartX, qy, width, upperColEndY);
+            allRects[0] = new AgcRectangle(0, Sketch.qy, this.gridBoxSize, upperColEndY);
+            allRects[1] = new AgcRectangle(secondRectStartX, Sketch.qy, thirdRectStartX,
+              upperColEndY);
+            allRects[2] = new AgcRectangle(thirdRectStartX, Sketch.qy, width, upperColEndY);
 
-            allRects[3] = new Rectangle(0, lowerColStartY, this.gridBoxSize, height);
-            allRects[4] = new Rectangle(secondRectStartX, lowerColStartY, thirdRectStartX, height);
-            allRects[5] = new Rectangle(thirdRectStartX, lowerColStartY, width, height);
+            allRects[3] = new AgcRectangle(0, lowerColStartY, this.gridBoxSize, height);
+            allRects[4] = new AgcRectangle(secondRectStartX, lowerColStartY, thirdRectStartX,
+              height);
+            allRects[5] = new AgcRectangle(thirdRectStartX, lowerColStartY, width, height);
         }
 
         @Override
@@ -754,13 +765,14 @@ public class SketchWithScenes extends Sketch {
             pushMatrix();
             pushStyle();
 
+            // Intersection detection and rendering for "selected" rectangle:
             if (mousePressed && Sketch.listOfUnprojectedTouches.size() > 0) {
-                PVector touch = Sketch.listOfUnprojectedTouches.get(0);
-                if (touch.y > qy) {
+                PVector touch = Sketch.mouse;
+                if (touch.y > Sketch.qy) {
                     pushStyle();
                     rectMode(CORNER);
                     fill(255, 150);
-                    for (Rectangle r : this.allRects)
+                    for (AgcRectangle r : this.allRects)
                         if (r.contains(touch)) {
                             rect(r.start.x, r.start.y,
                               this.gridBoxSize, this.gridBoxHalfSize + 20);
@@ -771,27 +783,27 @@ public class SketchWithScenes extends Sketch {
                 // region Old method...
                 //rect(
                 //touch.x % this.gridBoxSize * (touch.x * this.gridBoxSize),
-                //(touch.y % this.gridBoxHalfSize * (touch.x * this.gridBoxHalfSize)) - qy,
+                //(touch.y % this.gridBoxHalfSize * (touch.x * this.gridBoxHalfSize)) - Sketch.qy,
                 //this.gridBoxSize, this.gridBoxHalfSize);
                 // endregion
             }
 
             textSize(72);
             text(MainActivity.appAct.getString(
-              R.string.controlChoiceScene_heading), cx, this.headingTextY);
+              R.string.controlChoiceScene_heading), Sketch.cx, this.headingTextY);
 
             // The bar right below:
             stroke(255);
             strokeWeight(2);
-            line(0, qy, width, qy);
+            line(0, Sketch.qy, width, Sketch.qy);
 
             // region Draw a grid!
             // The bar at "half":
             line(0, this.horizontalGridCenterLineY, width, this.horizontalGridCenterLineY);
 
             // Vertical grid lines!:
-            line(this.verticalGridLine1x, qy, this.verticalGridLine1x, height);
-            line(this.verticalGridLine2x, qy, this.verticalGridLine2x, height);
+            line(this.verticalGridLine1x, Sketch.qy, this.verticalGridLine1x, height);
+            line(this.verticalGridLine2x, Sketch.qy, this.verticalGridLine2x, height);
             // endregion
 
             // The GitHub link!:
@@ -800,7 +812,7 @@ public class SketchWithScenes extends Sketch {
             textSize(48);
             text(MainActivity.appAct.getString(
                 R.string.controlChoiceScene_add_more),
-              this.gridBoxHalfSize, this.horizontalGridCenterLineY + this.gridBoxQuarterSize);
+              this.gridBoxHalfSize, Sketch.qy + this.gridBoxQuarterSize);
             popStyle();
 
             popMatrix();
@@ -809,7 +821,99 @@ public class SketchWithScenes extends Sketch {
 
         @Override
         public void touchEnded(TouchEvent p_touchEvent) {
+            if (Sketch.listOfUnprojectedTouches.size() < 1)
+                return;
 
+            PVector touch = Sketch.mouse, controlPos = new PVector(/*Sketch.cx, Sketch.cy*/);
+
+            if (this.config == null)
+                controlPos.set(Sketch.cx, Sketch.cy);
+            else /* Place at the midpoint of all controls! */ {
+                int totalControls = 0;
+                //ArrayList<> list;
+
+                if (this.config.buttons != null) {
+                    for (ButtonConfig c : this.config.buttons)
+                        controlPos.add(c.transform);
+                    totalControls += this.config.buttons.size();
+                }
+
+                if (this.config.dpadButtons != null) {
+                    for (DpadButtonConfig c : this.config.dpadButtons)
+                        controlPos.add(c.transform);
+                    totalControls += this.config.dpadButtons.size();
+                }
+
+                if (this.config.thumbsticks != null) {
+                    for (ThumbstickConfig c : this.config.thumbsticks)
+                        controlPos.add(c.transform);
+                    totalControls += this.config.thumbsticks.size();
+                }
+
+                if (this.config.touchpads != null) {
+                    for (TouchpadConfig c : this.config.touchpads)
+                        controlPos.add(c.transform);
+                    totalControls += this.config.touchpads.size();
+                }
+
+                controlPos.div(totalControls);
+            }
+
+            if (touch.y > Sketch.qy)
+                for (int i = 0; i < 6; i++)
+                    if (allRects[i].contains(touch)) {
+                        switch (this.page) {
+                            case 0:
+                                switch (i) {
+                                    case 0:
+                                        Sketch.config.buttons.add(null);
+                                        break;
+
+                                    case 1:
+                                        break;
+
+                                    case 2:
+                                        break;
+
+                                    case 3:
+                                        break;
+
+                                    case 4:
+                                        break;
+
+                                    case 5:
+                                        break;
+
+                                    default:
+                                }
+                                break;
+
+                            case 1:
+                                switch (i) {
+                                    case 0:
+                                        Sketch.config.buttons.add(null);
+                                        break;
+
+                                    case 1:
+                                        break;
+
+                                    case 2:
+                                        break;
+
+                                    case 3:
+                                        break;
+
+                                    case 4:
+                                        break;
+
+                                    case 5:
+                                        break;
+
+                                    default:
+                                }
+                                break;
+                        }
+                    }
         }
 
         @Override
@@ -817,7 +921,94 @@ public class SketchWithScenes extends Sketch {
             Scene.setScene(MainActivity.sketch.editorScene);
         }
     };
-// endregion
+
+    // The user gets a file picker to do that here.
+    // Just get to the point - scan only the directory AGC creates for configuration records!
+    // And please, use "initialization" (`.ini`) files! Serialization will break with updates!
+    Scene configSelectionScene = new Scene() {
+        ArrayList<AgcListElement> listElements;
+        File configsDir = new File(MainActivity.AGC_DIR.getAbsolutePath().concat("configs"));
+        File[] configFiles;
+
+        final float LIST_LABEL_TEXT_SIZE = 24, LIST_ELT_RECT_HEIGHT = 64;
+
+        class AgcListElement {
+            public AgcRectangle rect;
+            public String label;
+
+            public AgcListElement(PVector p_start, PVector p_end, String p_label) {
+                this.label = p_label;
+                this.rect = new AgcRectangle(p_start, p_end);
+            }
+
+            public AgcListElement(
+              String p_label,
+              float p_startX, float p_startY,
+              float p_endX, float p_endY) {
+                this.label = p_label;
+                this.rect = new AgcRectangle(p_startX, p_startY, p_endX, p_endY);
+            }
+        }
+
+        @Override
+        public void setup() {
+            if (!this.configsDir.exists()) {
+                this.configsDir.mkdir();
+            } else {
+                this.configFiles = this.configsDir.listFiles();
+
+                float startY = 0, endY = 0;
+                for (int i = 0; i < this.configFiles.length; i++) {
+                    startY = endY + height / i;
+                    endY = startY + this.LIST_ELT_RECT_HEIGHT;
+                    this.listElements.add(new AgcListElement(
+                      this.configFiles[i].getName(),
+                      Sketch.qx, startY, Sketch.q3x, endY));
+                }
+            }
+        }
+
+        @Override
+        public void draw() {
+            if (this.configFiles == null) {
+                textSize(48);
+                text(MainActivity.appAct.getString(R.string.configSelectionScene_no_configs),
+                  Sketch.cx, Sketch.cy);
+
+                textSize(24);
+                text(MainActivity.appAct.getString(R.string.configSelectionScene_how_to_make),
+                  Sketch.cx, Sketch.cy);
+                return;
+            }
+
+            // Else, list files:
+
+            pushStyle();
+            strokeWeight(4);
+            rectMode(CORNER);
+            for (AgcListElement e : this.listElements) {
+                if (mousePressed && e.rect.contains(Sketch.mouse)) {
+                    fill(255, 150);
+                } else noFill();
+                //SketchWithScenes.super.Sketch.cy = 0; // Ayo!
+                rect(e.rect.start.x, e.rect.start.y, Sketch.cx, this.LIST_ELT_RECT_HEIGHT);
+            }
+            popStyle();
+
+        }
+
+        @Override
+        public void onBackPressed() {
+            // Depending on whether or not you already were "in a session" with a server, AGC
+            // should drop you back into the correct scene.
+
+            // If you were in a session, you're dropped into workScene.
+            // If not, loadScene.
+
+            Scene.setScene(MainActivity.inSession? workScene : loadScene);
+        }
+    };
+    // endregion
 
     // region `backgroundWithAlpha()` overloads.
     void backgroundWithAlpha(float p_grey, float p_alpha) {
@@ -853,7 +1044,7 @@ public class SketchWithScenes extends Sketch {
 
     public void completeExit() {
         socket.sendCode(RequestCode.CLIENT_CLOSE, serverIp, RequestCode.SERVER_PORT);
-        MainActivity.sketch.inSession = false;
+        MainActivity.inSession = false;
 
         System.out.println("Ending activity, killing process...");
         MainActivity.appAct.finish();

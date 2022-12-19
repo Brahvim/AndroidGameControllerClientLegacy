@@ -25,19 +25,21 @@ public class Sketch extends PApplet {
     // region Stuff that makes AGC *GO!*:
     public static AgcClientSocket socket;
     public static String serverIp;
-    public boolean inSession; // Is the client sending the server data already?
     // endregion
 
     // region Boilerplate-y stuff.
-    public static final ArrayList<PVector> listOfUnprojectedTouches = new ArrayList<>(10);
-    public static ArrayList<PVector> plistOfUnprojectedTouches = new ArrayList<>(10);
+    public final static PVector mouse = new PVector();
+    public final static ArrayList<PVector> listOfUnprojectedTouches = new ArrayList<>(10);
+    public volatile static ArrayList<PVector> plistOfUnprojectedTouches = new ArrayList<>(10);
     // ^^^ Funny how `ArrayList`s have a capacity of `10` by default, haha.
-    public PGraphicsOpenGL glGraphics;
-    public float frameStartTime, pframeTime, frameTime;
     public static PFont DEFAULT_FONT;
     public static final float DEFAULT_FONT_SIZE = 72;
     public static float cx, cy, qx, qy, q3x, q3y, scr, fov = PI / 3;
+
     public PVector cameraPos, cameraCenter, cameraUp;
+
+    public PGraphicsOpenGL glGraphics;
+    public float frameStartTime, pframeTime, frameTime;
     // endregion
     // endregion
 
@@ -185,10 +187,17 @@ public class Sketch extends PApplet {
         frameTime = frameStartTime - pframeTime;
         pframeTime = frameStartTime;
 
+        // No camera, since I'm using mapping for un-projection.
+        // Would be a good idea to just *use* un-projection!...
+
         //camera(cameraPos.x, cameraPos.y, cameraPos.z,
         //cameraCenter.x, cameraCenter.y, cameraCenter.z,
         //cameraUp.x, cameraUp.y, cameraUp.z);
+
         perspective(fov, scr, 0.1f, 10_000);
+
+        if (Sketch.listOfUnprojectedTouches.size() > 0)
+            mouse.set(Sketch.listOfUnprojectedTouches.get(0));
 
         // Render the current scene!:
         {
@@ -208,6 +217,10 @@ public class Sketch extends PApplet {
             ellipse(v.x, v.y, 20, 20);
         }
         popStyle();
+
+        // Also record the `mouse` vector here, haha:
+        if (Sketch.listOfUnprojectedTouches.size() > 0)
+            mouse.set(Sketch.listOfUnprojectedTouches.get(0));
 
         Sketch.plistOfUnprojectedTouches = Sketch.listOfUnprojectedTouches;
     }

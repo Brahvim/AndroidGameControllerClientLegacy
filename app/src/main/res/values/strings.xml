@@ -26,14 +26,20 @@
     </string>
 
     <string name="exitScene_yes">Exit.</string>
-
+    <string name="exitScene_no">Wait!</string>
     <string name="exitScene_set">Configure</string>
 
-    <string name="exitScene_add_control">Add Control</string>
+    <string name="exitScene_add_control">Add</string>
 
     <string name="exitScene_back_to_editor">To Editor!</string>
+    <string name="exitScene_back_to_work">To Menu!</string>
+    <string name="exitScene_back_to_wait">To Controller!</string>
 
-    <string name="exitScene_no">Wait!</string>
+    <!-- endregion -->
+
+    <!-- region `configSelectionScene`-->
+    <string name="configSelectionScene_no_configs">No configuration files found!</string>
+    <string name="configSelectionScene_how_to_make">Tap to make one, or press back to exit.</string>
     <!-- endregion -->
 
     <!-- region `controlChoiceScene`-->
