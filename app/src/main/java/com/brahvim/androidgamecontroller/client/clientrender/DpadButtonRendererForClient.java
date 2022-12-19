@@ -2,6 +2,7 @@ package com.brahvim.androidgamecontroller.client.clientrender;
 
 import com.brahvim.androidgamecontroller.RequestCode;
 import com.brahvim.androidgamecontroller.client.CollisionAlgorithms;
+import com.brahvim.androidgamecontroller.client.MainActivity;
 import com.brahvim.androidgamecontroller.client.Sketch;
 import com.brahvim.androidgamecontroller.render.DpadButtonRendererBase;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
@@ -138,7 +139,8 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
         super.state.pressed = false;
 
         for (PVector v : Sketch.listOfUnprojectedTouches) {
-            super.state.pressed = this.colFxn.check(v, super.config.scale, super.config.transform);
+            super.state.pressed = MainActivity.sketch.mousePressed &&
+              this.colFxn.check(v, super.config.scale, super.config.transform);
             if (super.state.pressed)
                 break;
         }
@@ -162,12 +164,6 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
 
     // region Touch events.
     public void touchStarted() {
-        super.state.ppressed = super.state.pressed;
-        this.recordTouch();
-        this.sendStateIfChanged();
-    }
-
-    public void touchMoved() {
         // Record previous state:
         super.state.ppressed = super.state.pressed;
 
@@ -175,6 +171,12 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
         this.recordTouch();
 
         // If changes took place, send 'em over! ":D
+        this.sendStateIfChanged();
+    }
+
+    public void touchMoved() {
+        super.state.ppressed = super.state.pressed;
+        this.recordTouch();
         this.sendStateIfChanged();
     }
 

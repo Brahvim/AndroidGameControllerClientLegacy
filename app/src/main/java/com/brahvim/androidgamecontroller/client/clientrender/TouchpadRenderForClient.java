@@ -11,22 +11,13 @@ import com.brahvim.androidgamecontroller.serial.configs.TouchpadConfig;
 import processing.core.PVector;
 
 public class TouchpadRenderForClient extends TouchpadRendererBase implements ClientRenderer {
-    //private int pTouchCount; // No stupid optimizations.
-    private TrackingPolicy trackingPolicy = TrackingPolicy.FIRST;
-    private PVector colStart, colEnd, lastTouch;
+    private TouchpadConfig.TrackingPolicy trackingPolicy = TouchpadConfig.TrackingPolicy.FIRST;
+    private PVector colStart, colEnd;
     private int lastTouchMillis;
-    private final int DOUBLE_TAP_THRESHOLD = 1000;
+    private final int DOUBLE_TAP_THRESHOLD = 5000;
 
     // TODO: Make a variation of a touchpad allowing the PC screen to act like a touch screen,
     //  and not just a mouse-only touchpad! (Sadly, this is where screencasting makes sense!)
-
-    // Determines which touch this touchpad tracks when there are multiple moving on it!
-    // Might be a redundant feature!
-    public enum TrackingPolicy {
-        FIRST(), // The touch that touched the touchpad before the others is tracked.
-        LAST(), // The latest touch that touched the touchpad is tracked.
-        MID(); // The midpoint of all touches is the position the touchpad tracks.
-    }
 
     public TouchpadRenderForClient(TouchpadConfig p_config) {
         super(p_config);
@@ -98,12 +89,11 @@ public class TouchpadRenderForClient extends TouchpadRendererBase implements Cli
             return;
 
         if (super.state.pressed) {
-            this.lastTouch = Sketch.listOfUnprojectedTouches.get(0);
             this.lastTouchMillis = MainActivity.sketch.millis();
         }
 
         super.state.pdoubleTapped = super.state.doubleTapped;
-        if (this.lastTouchMillis < this.DOUBLE_TAP_THRESHOLD)
+        if (this.lastTouchMillis < MainActivity.sketch.millis() + this.DOUBLE_TAP_THRESHOLD)
             super.state.doubleTapped = true;
         else super.state.doubleTapped = false;
 
@@ -125,6 +115,7 @@ public class TouchpadRenderForClient extends TouchpadRendererBase implements Cli
     }
     // endregion
 
+    // Older implementation of methods:
     /*
     private void recordTouch() {
         // Record previous state:
