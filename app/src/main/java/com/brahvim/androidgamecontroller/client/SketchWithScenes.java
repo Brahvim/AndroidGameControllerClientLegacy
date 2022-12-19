@@ -681,6 +681,16 @@ public class SketchWithScenes extends Sketch {
     // `SketchWithScenes::editorScene` handles the rest.
 
     Scene controlChoiceScene = new Scene() {
+        // Layout:
+        /*
+        ________________________________
+        |   Select a control to add:   |
+        |    1     |    2    |    3    |
+        |----------|---------|---------|
+        |GitHubLink|    4    |    5    |
+        |______________________________|
+        */
+
         float headingTextY;
         float horizontalGridCenterLineY;
         float verticalGridLine1x, verticalGridLine2x;
@@ -724,16 +734,13 @@ public class SketchWithScenes extends Sketch {
             this.verticalGridLine2x = width - this.verticalGridLine1x;
 
             float upperColumnEndY = qy + this.gridBoxHalfSize,
-              lowerColumnEndY = qy + this.gridBoxHalfSize * 2,
               thirdRectStartX = this.gridBoxSize * 2;
             allRects[0] = new Rectangle(0, qy, this.gridBoxSize, upperColumnEndY);
             allRects[1] = new Rectangle(this.gridBoxSize, qy, thirdRectStartX, upperColumnEndY);
             allRects[2] = new Rectangle(thirdRectStartX, qy, width, upperColumnEndY);
 
-            allRects[3] = new Rectangle(0, upperColumnEndY,
-              this.gridBoxSize, lowerColumnEndY);
-            allRects[4] = new Rectangle(this.gridBoxSize, upperColumnEndY,
-              thirdRectStartX, lowerColumnEndY);
+            allRects[3] = new Rectangle(0, upperColumnEndY, this.gridBoxSize, height);
+            allRects[4] = new Rectangle(this.gridBoxSize, upperColumnEndY, thirdRectStartX, height);
             allRects[5] = new Rectangle(thirdRectStartX, upperColumnEndY, width, height);
         }
 
@@ -744,16 +751,17 @@ public class SketchWithScenes extends Sketch {
             pushMatrix();
             pushStyle();
 
-            pushStyle();
             if (Sketch.listOfUnprojectedTouches.size() > 0) {
                 PVector touch = Sketch.listOfUnprojectedTouches.get(0);
-
                 if (touch.y > qy) {
+                    pushStyle();
+                    fill(255, 150);
                     for (Rectangle r : this.allRects)
                         if (r.contains(touch)) {
-                            fill(255, 150);
-                            rect(r.center.x, r.center.y, this.gridBoxSize, this.gridBoxHalfSize);
+                            rect(r.center.x, r.center.y + 10,
+                              this.gridBoxSize, this.gridBoxHalfSize + 10);
                         }
+                    popStyle();
                 }
 
                 // region Old method...
@@ -764,29 +772,14 @@ public class SketchWithScenes extends Sketch {
                 // endregion
             }
 
-            popStyle();
-
             textSize(72);
-
             text(MainActivity.appAct.getString(
               R.string.controlChoiceScene_heading), cx, this.headingTextY);
 
             // The bar right below:
             stroke(255);
-
             strokeWeight(2);
-
             line(0, qy, width, qy);
-
-            // Layout:
-            /*
-            ________________________________
-            |   Select a control to add:   |
-            |    1     |    2    |    3    |
-            |----------|---------|---------|
-            |GitHubLink|    4    |    5    |
-            |______________________________|
-             */
 
             // region Draw a grid!
             // The bar at "half":
@@ -794,25 +787,19 @@ public class SketchWithScenes extends Sketch {
 
             // Vertical grid lines!:
             line(this.verticalGridLine1x, qy, this.verticalGridLine1x, height);
-
             line(this.verticalGridLine2x, qy, this.verticalGridLine2x, height);
             // endregion
 
             // The GitHub link!:
             pushStyle();
-
             fill(0, 64, 214);
-
             textSize(48);
-
             text(MainActivity.appAct.getString(
                 R.string.controlChoiceScene_add_more),
               this.gridBoxHalfSize, this.horizontalGridCenterLineY + this.gridBoxQuarterSize);
-
             popStyle();
 
             popMatrix();
-
             popStyle();
         }
 
