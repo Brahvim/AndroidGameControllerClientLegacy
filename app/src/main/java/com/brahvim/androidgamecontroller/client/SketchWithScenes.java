@@ -12,6 +12,8 @@ import com.brahvim.androidgamecontroller.client.clientrender.DpadButtonRendererF
 import com.brahvim.androidgamecontroller.client.clientrender.ThumbstickRendererForClient;
 import com.brahvim.androidgamecontroller.client.clientrender.TouchpadRenderForClient;
 import com.brahvim.androidgamecontroller.client.easings.SineWave;
+import com.brahvim.androidgamecontroller.render.ButtonRendererBase;
+import com.brahvim.androidgamecontroller.serial.ButtonShape;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
 import com.brahvim.androidgamecontroller.serial.DpadDirection;
 import com.brahvim.androidgamecontroller.serial.configs.AgcConfigurationPacket;
@@ -806,17 +808,39 @@ public class SketchWithScenes extends Sketch {
             line(this.verticalGridLine2x, Sketch.qy, this.verticalGridLine2x, height);
             // endregion
 
-            // The GitHub link!:
-            pushStyle();
-            fill(0, 64, 214);
-            textSize(48);
-            text(MainActivity.appAct.getString(
-                R.string.controlChoiceScene_add_more),
-              this.gridBoxHalfSize, Sketch.qy + this.gridBoxQuarterSize);
-            popStyle();
+            switch (this.page) {
+                case 0:
+                    // region The GitHub link!
+                    pushStyle();
+                    fill(0, 64, 214);
+                    textSize(48);
+                    text(MainActivity.appAct.getString(
+                        R.string.controlChoiceScene_add_more),
+                      this.gridBoxHalfSize, Sketch.qy + this.gridBoxQuarterSize);
+                    popStyle();
+                    // endregion
+
+                    this.roundButton("A", this.allRects[1]);
+                    this.roundButton("B", this.allRects[2]);
+                    this.roundButton("X", this.allRects[3]);
+                    this.roundButton("Y", this.allRects[4]);
+
+                case 1:
+                    break;
+            }
 
             popMatrix();
             popStyle();
+        }
+
+        private void roundButton(String p_text, AgcRectangle p_rect) {
+            pushMatrix();
+            pushStyle();
+            translate(p_rect.center.x, p_rect.center.y);
+            scale(150, 150);
+            ButtonRendererBase.displayDraw(g, p_text, ButtonShape.ROUND, false);
+            popStyle();
+            popMatrix();
         }
 
         @Override
@@ -826,6 +850,7 @@ public class SketchWithScenes extends Sketch {
 
             PVector touch = Sketch.mouse, controlPos = new PVector(/*Sketch.cx, Sketch.cy*/);
 
+            // region Decide where the new control will be placed.
             if (this.config == null)
                 controlPos.set(Sketch.cx, Sketch.cy);
             else /* Place at the midpoint of all controls! */ {
@@ -858,6 +883,7 @@ public class SketchWithScenes extends Sketch {
 
                 controlPos.div(totalControls);
             }
+            // endregion
 
             if (touch.y > Sketch.qy)
                 for (int i = 0; i < 6; i++)
@@ -866,7 +892,7 @@ public class SketchWithScenes extends Sketch {
                             case 0:
                                 switch (i) {
                                     case 0:
-                                        Sketch.config.buttons.add(null);
+                                        Sketch.config.buttons.add(new ButtonConfig());
                                         break;
 
                                     case 1:
@@ -882,6 +908,7 @@ public class SketchWithScenes extends Sketch {
                                         break;
 
                                     case 5:
+                                        this.page++;
                                         break;
 
                                     default:
@@ -913,7 +940,10 @@ public class SketchWithScenes extends Sketch {
                                 }
                                 break;
                         }
+                        // The user selected something! Go back!:
+                        Scene.setScene(editorScene);
                     }
+
         }
 
         @Override
