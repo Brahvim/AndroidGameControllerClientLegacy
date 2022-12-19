@@ -349,6 +349,8 @@ public class SketchWithScenes extends Sketch {
             //System.out.printf("\t`%d`\n",r.this.config.controlNumber);
             //}
 
+            MainActivity.config = this.config;
+
             socket.sendCode(RequestCode.CLIENT_SENDS_CONFIG,
               ByteSerial.encode(this.config),
               serverIp, RequestCode.SERVER_PORT);
@@ -563,11 +565,23 @@ public class SketchWithScenes extends Sketch {
               this.noPosDy.x, this.noPosDy.y);
             // endregion
 
-            // region "Configure" - brings up the editor scene:
+            // region "Configure" / "To Editor!" / "Add Control"
+            // ...brings up the `editorScene` / `controlChoiceScene`:
             fill(0, 64, 214, alpha);
             if (this.canFillButtonColors && this.setPressed)
                 fill(214, 214, 64, alpha);
-            text(MainActivity.appAct.getString(R.string.exitScene_set),
+
+            int setStr = 0;
+
+            Scene previousScene = Scene.getPreviousScene();
+            if (previousScene == editorScene)
+                setStr = R.string.exitScene_add_control;
+            else if (previousScene == controlChoiceScene)
+                setStr = R.string.exitScene_back_to_editor;
+            else
+                setStr = R.string.exitScene_set;
+
+            text(MainActivity.appAct.getString(setStr),
               this.setPosDy.x, this.setPosDy.y);
             // endregion
             // endregion
@@ -621,16 +635,13 @@ public class SketchWithScenes extends Sketch {
 
             this.buttonCheck();
 
+            Scene previousScene = Scene.getPreviousScene();
             if (this.yesPressed) {
                 completeExit();
-            }
-
-            if (this.noPressed) {
-                Scene.setScene(Scene.getPreviousScene());
-            }
-
-            if (this.setPressed) {
-                Scene.setScene(editorScene);
+            } else if (this.noPressed) {
+                Scene.setScene(previousScene);
+            } else if (this.setPressed) {
+                Scene.setScene(previousScene == editorScene? controlChoiceScene : editorScene);
             }
         }
 
@@ -645,17 +656,81 @@ public class SketchWithScenes extends Sketch {
     // into `ClientRenderers.all`, receive changes,
     // ..save 'em new changes to another file or something!
     Scene editorScene = new Scene() {
+        AgcConfigurationPacket config = MainActivity.config;
+
         @Override
         public void setup() {
+            if (MainActivity.config == null) {
+                this.config = MainActivity.config = new AgcConfigurationPacket();
+            }
         }
 
         @Override
         public void draw() {
+            background(0);
         }
 
         @Override
         public void onBackPressed() {
             Scene.setScene(Scene.getPreviousScene());
+        }
+    };
+
+    // You just add the control to `MainActivity.config`, positioned at (0, 0),
+    // ...or at the CENTER of every controller!.
+    // `SketchWithScenes::editorScene` handles the rest.
+
+    Scene controlChoiceScene = new Scene() {
+        float headingTextY;
+
+        @Override
+        public void setup() {
+            headingTextY = qy - (qy * 0.5f);
+        }
+
+        @Override
+        public void draw() {
+            background(0);
+
+            pushMatrix();
+            pushStyle();
+
+            textSize(72);
+            text(MainActivity.appAct.getString(
+              R.string.controlChoiceScene_heading), cx, headingTextY);
+
+            stroke(255);
+            strokeWeight(4);
+            line(0, qy, width, qy);
+
+            // Layout:
+            /*
+            ________________________________
+            |   Select a control to add:   |
+            |    1    |    2    |     3    |
+            |---------|---------|----------|
+            |   Back  |    4    |GitHubLink|
+            |______________________________|
+             */
+
+            // region Draw a grid!
+            strokeWeight(2);
+            line(0, cy, width, cy);
+
+            float lineX = 0;
+            for (int i = 1; i < 3; i++) {
+                lineX = (width / i) - qx;
+                line(lineX, qy, lineX, height);
+            }
+            // endregion
+
+            popMatrix();
+            popStyle();
+        }
+
+        @Override
+        public void onBackPressed() {
+            Scene.setScene(MainActivity.sketch.editorScene);
         }
     };
     // endregion

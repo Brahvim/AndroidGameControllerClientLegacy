@@ -29,7 +29,16 @@
 
     <string name="exitScene_set">Configure</string>
 
+    <string name="exitScene_add_control">Add Control</string>
+
+    <string name="exitScene_back_to_editor">To Editor!</string>
+
     <string name="exitScene_no">Wait!</string>
     <!-- endregion -->
+
+    <!-- region `controlChoiceScene`-->
+    <string name="controlChoiceScene_heading">Select a control to add:</string>
+    <!-- endregion -->
+
 
 </resources>
