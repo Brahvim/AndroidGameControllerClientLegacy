@@ -686,6 +686,30 @@ public class SketchWithScenes extends Sketch {
         float verticalGridLine1x, verticalGridLine2x;
         float gridBoxSize, gridBoxHalfSize, gridBoxQuarterSize;
 
+        Rectangle[] allRects = new Rectangle[6];
+
+        class Rectangle {
+            public PVector center;
+            private PVector start, end;
+
+            public Rectangle(PVector p_start, PVector p_end) {
+                this.end = p_end;
+                this.start = p_start;
+                this.center = PVector.add(this.start, this.end).mult(0.5f);
+            }
+
+            public Rectangle(float p_startX, float p_startY, float p_endX, float p_endY) {
+                this.end = new PVector(p_endX, p_endY);
+                this.start = new PVector(p_startX, p_startY);
+                this.center = PVector.add(this.start, this.end).mult(0.5f);
+            }
+
+            public boolean contains(PVector p_point) {
+                return CollisionAlgorithms.ptRect(
+                  p_point, this.start, this.end);
+            }
+        }
+
         @Override
         public void setup() {
             this.headingTextY = qy - (qy * 0.5f);
@@ -698,6 +722,19 @@ public class SketchWithScenes extends Sketch {
 
             this.verticalGridLine1x = this.gridBoxSize;
             this.verticalGridLine2x = width - this.verticalGridLine1x;
+
+            float upperColumnEndY = qy + this.gridBoxHalfSize,
+              lowerColumnEndY = qy + this.gridBoxHalfSize * 2,
+              thirdRectStartX = this.gridBoxSize * 2;
+            allRects[0] = new Rectangle(0, qy, this.gridBoxSize, upperColumnEndY);
+            allRects[1] = new Rectangle(this.gridBoxSize, qy, thirdRectStartX, upperColumnEndY);
+            allRects[2] = new Rectangle(thirdRectStartX, qy, width, upperColumnEndY);
+
+            allRects[3] = new Rectangle(0, upperColumnEndY,
+              this.gridBoxSize, lowerColumnEndY);
+            allRects[4] = new Rectangle(this.gridBoxSize, upperColumnEndY,
+              thirdRectStartX, lowerColumnEndY);
+            allRects[5] = new Rectangle(thirdRectStartX, upperColumnEndY, width, height);
         }
 
         @Override
@@ -710,20 +747,35 @@ public class SketchWithScenes extends Sketch {
             pushStyle();
             if (Sketch.listOfUnprojectedTouches.size() > 0) {
                 PVector touch = Sketch.listOfUnprojectedTouches.get(0);
-                fill(255, 150);
-                rect(touch.x % this.gridBoxSize,
-                  touch.y % this.gridBoxHalfSize,
-                  this.gridBoxSize, this.gridBoxHalfSize);
+
+                if (touch.y > qy) {
+                    for (Rectangle r : this.allRects)
+                        if (r.contains(touch)) {
+                            fill(255, 150);
+                            rect(r.center.x, r.center.y, this.gridBoxSize, this.gridBoxHalfSize);
+                        }
+                }
+
+                // region Old method...
+                //rect(
+                //touch.x % this.gridBoxSize * (touch.x * this.gridBoxSize),
+                //(touch.y % this.gridBoxHalfSize * (touch.x * this.gridBoxHalfSize)) - qy,
+                //this.gridBoxSize, this.gridBoxHalfSize);
+                // endregion
             }
+
             popStyle();
 
             textSize(72);
+
             text(MainActivity.appAct.getString(
               R.string.controlChoiceScene_heading), cx, this.headingTextY);
 
             // The bar right below:
             stroke(255);
+
             strokeWeight(2);
+
             line(0, qy, width, qy);
 
             // Layout:
@@ -742,19 +794,25 @@ public class SketchWithScenes extends Sketch {
 
             // Vertical grid lines!:
             line(this.verticalGridLine1x, qy, this.verticalGridLine1x, height);
+
             line(this.verticalGridLine2x, qy, this.verticalGridLine2x, height);
             // endregion
 
             // The GitHub link!:
             pushStyle();
+
             fill(0, 64, 214);
+
             textSize(48);
+
             text(MainActivity.appAct.getString(
                 R.string.controlChoiceScene_add_more),
               this.gridBoxHalfSize, this.horizontalGridCenterLineY + this.gridBoxQuarterSize);
+
             popStyle();
 
             popMatrix();
+
             popStyle();
         }
 
