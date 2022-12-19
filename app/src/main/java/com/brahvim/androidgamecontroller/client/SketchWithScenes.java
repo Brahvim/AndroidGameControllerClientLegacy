@@ -699,19 +699,19 @@ public class SketchWithScenes extends Sketch {
         Rectangle[] allRects = new Rectangle[6];
 
         class Rectangle {
-            public PVector center;
+            //public PVector center;
             private PVector start, end;
 
             public Rectangle(PVector p_start, PVector p_end) {
                 this.end = p_end;
                 this.start = p_start;
-                this.center = PVector.add(this.start, this.end).mult(0.5f);
+                //this.center = PVector.add(this.start, this.end).mult(0.5f);
             }
 
             public Rectangle(float p_startX, float p_startY, float p_endX, float p_endY) {
                 this.end = new PVector(p_endX, p_endY);
                 this.start = new PVector(p_startX, p_startY);
-                this.center = PVector.add(this.start, this.end).mult(0.5f);
+                //this.center = PVector.add(this.start, this.end).mult(0.5f);
             }
 
             public boolean contains(PVector p_point) {
@@ -733,15 +733,18 @@ public class SketchWithScenes extends Sketch {
             this.verticalGridLine1x = this.gridBoxSize;
             this.verticalGridLine2x = width - this.verticalGridLine1x;
 
-            float upperColumnEndY = qy + this.gridBoxHalfSize,
-              thirdRectStartX = this.gridBoxSize * 2;
-            allRects[0] = new Rectangle(0, qy, this.gridBoxSize, upperColumnEndY);
-            allRects[1] = new Rectangle(this.gridBoxSize, qy, thirdRectStartX, upperColumnEndY);
-            allRects[2] = new Rectangle(thirdRectStartX, qy, width, upperColumnEndY);
+            float upperColEndY = qy + this.gridBoxHalfSize,
+              lowerColStartY = upperColEndY + 18,
+              secondRectStartX = this.gridBoxSize + 1,
+              thirdRectStartX = (this.gridBoxSize + 2) * 2;
 
-            allRects[3] = new Rectangle(0, upperColumnEndY, this.gridBoxSize, height);
-            allRects[4] = new Rectangle(this.gridBoxSize, upperColumnEndY, thirdRectStartX, height);
-            allRects[5] = new Rectangle(thirdRectStartX, upperColumnEndY, width, height);
+            allRects[0] = new Rectangle(0, qy, this.gridBoxSize, upperColEndY);
+            allRects[1] = new Rectangle(secondRectStartX, qy, thirdRectStartX, upperColEndY);
+            allRects[2] = new Rectangle(thirdRectStartX, qy, width, upperColEndY);
+
+            allRects[3] = new Rectangle(0, lowerColStartY, this.gridBoxSize, height);
+            allRects[4] = new Rectangle(secondRectStartX, lowerColStartY, thirdRectStartX, height);
+            allRects[5] = new Rectangle(thirdRectStartX, lowerColStartY, width, height);
         }
 
         @Override
@@ -751,15 +754,16 @@ public class SketchWithScenes extends Sketch {
             pushMatrix();
             pushStyle();
 
-            if (Sketch.listOfUnprojectedTouches.size() > 0) {
+            if (mousePressed && Sketch.listOfUnprojectedTouches.size() > 0) {
                 PVector touch = Sketch.listOfUnprojectedTouches.get(0);
                 if (touch.y > qy) {
                     pushStyle();
+                    rectMode(CORNER);
                     fill(255, 150);
                     for (Rectangle r : this.allRects)
                         if (r.contains(touch)) {
-                            rect(r.center.x, r.center.y + 10,
-                              this.gridBoxSize, this.gridBoxHalfSize + 10);
+                            rect(r.start.x, r.start.y,
+                              this.gridBoxSize, this.gridBoxHalfSize + 20);
                         }
                     popStyle();
                 }
