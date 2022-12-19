@@ -682,10 +682,22 @@ public class SketchWithScenes extends Sketch {
 
     Scene controlChoiceScene = new Scene() {
         float headingTextY;
+        float horizontalGridCenterLineY;
+        float verticalGridLine1x, verticalGridLine2x;
+        float gridBoxSize, gridBoxHalfSize, gridBoxQuarterSize;
 
         @Override
         public void setup() {
-            headingTextY = qy - (qy * 0.5f);
+            this.headingTextY = qy - (qy * 0.5f);
+
+            this.gridBoxSize = width / 3;
+            this.gridBoxHalfSize = this.gridBoxSize * 0.5f;
+            this.gridBoxQuarterSize = this.gridBoxHalfSize * 0.5f;
+
+            this.horizontalGridCenterLineY = qy + (height - qy) * 0.5f;
+
+            this.verticalGridLine1x = this.gridBoxSize;
+            this.verticalGridLine2x = width - this.verticalGridLine1x;
         }
 
         @Override
@@ -695,37 +707,60 @@ public class SketchWithScenes extends Sketch {
             pushMatrix();
             pushStyle();
 
+            pushStyle();
+            if (Sketch.listOfUnprojectedTouches.size() > 0) {
+                PVector touch = Sketch.listOfUnprojectedTouches.get(0);
+                fill(255, 150);
+                rect(touch.x % this.gridBoxSize,
+                  touch.y % this.gridBoxHalfSize,
+                  this.gridBoxSize, this.gridBoxHalfSize);
+            }
+            popStyle();
+
             textSize(72);
             text(MainActivity.appAct.getString(
-              R.string.controlChoiceScene_heading), cx, headingTextY);
+              R.string.controlChoiceScene_heading), cx, this.headingTextY);
 
+            // The bar right below:
             stroke(255);
-            strokeWeight(4);
+            strokeWeight(2);
             line(0, qy, width, qy);
 
             // Layout:
             /*
             ________________________________
             |   Select a control to add:   |
-            |    1    |    2    |     3    |
-            |---------|---------|----------|
-            |   Back  |    4    |GitHubLink|
+            |    1     |    2    |    3    |
+            |----------|---------|---------|
+            |GitHubLink|    4    |    5    |
             |______________________________|
              */
 
             // region Draw a grid!
-            strokeWeight(2);
-            line(0, cy, width, cy);
+            // The bar at "half":
+            line(0, this.horizontalGridCenterLineY, width, this.horizontalGridCenterLineY);
 
-            float lineX = 0;
-            for (int i = 1; i < 3; i++) {
-                lineX = (width / i) - qx;
-                line(lineX, qy, lineX, height);
-            }
+            // Vertical grid lines!:
+            line(this.verticalGridLine1x, qy, this.verticalGridLine1x, height);
+            line(this.verticalGridLine2x, qy, this.verticalGridLine2x, height);
             // endregion
+
+            // The GitHub link!:
+            pushStyle();
+            fill(0, 64, 214);
+            textSize(48);
+            text(MainActivity.appAct.getString(
+                R.string.controlChoiceScene_add_more),
+              this.gridBoxHalfSize, this.horizontalGridCenterLineY + this.gridBoxQuarterSize);
+            popStyle();
 
             popMatrix();
             popStyle();
+        }
+
+        @Override
+        public void touchEnded(TouchEvent p_touchEvent) {
+
         }
 
         @Override
@@ -733,7 +768,7 @@ public class SketchWithScenes extends Sketch {
             Scene.setScene(MainActivity.sketch.editorScene);
         }
     };
-    // endregion
+// endregion
 
     // region `backgroundWithAlpha()` overloads.
     void backgroundWithAlpha(float p_grey, float p_alpha) {
@@ -753,7 +788,7 @@ public class SketchWithScenes extends Sketch {
         pushStyle();
         popMatrix();
     }
-    // endregion
+// endregion
 
     // region Stuff that helps AGC exit.
     public void agcExit() {

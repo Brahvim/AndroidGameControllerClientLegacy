@@ -38,6 +38,8 @@
 
     <!-- region `controlChoiceScene`-->
     <string name="controlChoiceScene_heading">Select a control to add:</string>
+
+    <string name="controlChoiceScene_add_more">Want more?</string>
     <!-- endregion -->
 
 
