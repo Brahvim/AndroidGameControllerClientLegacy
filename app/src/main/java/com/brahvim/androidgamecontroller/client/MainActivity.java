@@ -11,8 +11,6 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.brahvim.androidgamecontroller.serial.configs.AgcConfigurationPacket;
-
 import java.io.File;
 
 import processing.android.CompatUtils;
@@ -31,7 +29,6 @@ public class MainActivity extends AppCompatActivity {
     public static SketchWithScenes sketch;
     public static PFragment fragment;
     public static FrameLayout frame;
-    public static AgcConfigurationPacket config;
 
     // Note: calling the super class's methods first is a good idea, IF
     // their functioning / 'default behvaior' does not interfere with yours.

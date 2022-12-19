@@ -13,6 +13,7 @@ import com.brahvim.androidgamecontroller.client.clientrender.ThumbstickRendererF
 import com.brahvim.androidgamecontroller.client.clientrender.TouchpadRenderForClient;
 import com.brahvim.androidgamecontroller.client.easings.SineWave;
 import com.brahvim.androidgamecontroller.render.ButtonRendererBase;
+import com.brahvim.androidgamecontroller.render.DpadButtonRendererBase;
 import com.brahvim.androidgamecontroller.serial.ButtonShape;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
 import com.brahvim.androidgamecontroller.serial.DpadDirection;
@@ -362,7 +363,7 @@ public class SketchWithScenes extends Sketch {
             //System.out.printf("\t`%d`\n",r.this.config.controlNumber);
             //}
 
-            MainActivity.config = this.config;
+            Sketch.config = this.config;
 
             socket.sendCode(RequestCode.CLIENT_SENDS_CONFIG,
               ByteSerial.encode(this.config),
@@ -679,12 +680,11 @@ public class SketchWithScenes extends Sketch {
     // into `ClientRenderers.all`, receive changes,
     // ..save 'em new changes to another file or something!
     Scene editorScene = new Scene() {
-        AgcConfigurationPacket config = MainActivity.config;
-
         @Override
         public void setup() {
-            if (MainActivity.config == null) {
-                this.config = MainActivity.config = new AgcConfigurationPacket();
+            if (Sketch.config == null) {
+                Sketch.config = new AgcConfigurationPacket();
+                Sketch.config.initLists();
             }
         }
 
@@ -706,7 +706,7 @@ public class SketchWithScenes extends Sketch {
         }
     };
 
-    // You just add the control to `MainActivity.config`, positioned at (0, 0),
+    // You just add the control to `Sketch.config`, positioned at (0, 0),
     // ...or at the CENTER of every controller!.
     // `SketchWithScenes::editorScene` handles the rest.
 
@@ -721,18 +721,26 @@ public class SketchWithScenes extends Sketch {
         |__________|_________|_________|
         */
 
-        AgcConfigurationPacket config = Sketch.config;
-
+        // region Scene fields!
         float headingTextY;
         float horizontalGridCenterLineY;
         float verticalGridLine1x, verticalGridLine2x;
         float gridBoxSize, gridBoxHalfSize, gridBoxQuarterSize;
 
         final AgcRectangle[] allRects = new AgcRectangle[6];
-        int page = 0; // Can have more pages for more controls!
+        volatile int page = 0; // Can have more pages for more controls!
+        // endregion
 
         @Override
         public void setup() {
+            if (Sketch.config == null) {
+                Sketch.config = new AgcConfigurationPacket();
+                Sketch.config.initLists();
+            }
+
+            if (Sketch.config.anyConfigArrayisNull())
+                Sketch.config.initLists();
+
             this.headingTextY = Sketch.qy - (Sketch.qy * 0.5f);
 
             this.gridBoxSize = width / 3;
@@ -744,6 +752,7 @@ public class SketchWithScenes extends Sketch {
             this.verticalGridLine1x = this.gridBoxSize;
             this.verticalGridLine2x = width - this.verticalGridLine1x;
 
+            // region Rectangles!
             float upperColEndY = Sketch.qy + this.gridBoxHalfSize,
               lowerColStartY = upperColEndY + 18,
               secondRectStartX = this.gridBoxSize + 1,
@@ -758,14 +767,16 @@ public class SketchWithScenes extends Sketch {
             allRects[4] = new AgcRectangle(secondRectStartX, lowerColStartY, thirdRectStartX,
               height);
             allRects[5] = new AgcRectangle(thirdRectStartX, lowerColStartY, width, height);
+            // endregion
         }
 
         @Override
         public void draw() {
-            background(0);
-
             pushMatrix();
             pushStyle();
+
+            // region Non-page rendering, LOL.
+            background(0);
 
             // Intersection detection and rendering for "selected" rectangle:
             if (mousePressed && Sketch.listOfUnprojectedTouches.size() > 0) {
@@ -790,14 +801,19 @@ public class SketchWithScenes extends Sketch {
                 // endregion
             }
 
+            // region Heading and underline!
+            // region Heading text.
             textSize(72);
             text(MainActivity.appAct.getString(
               R.string.controlChoiceScene_heading), Sketch.cx, this.headingTextY);
+            // endregion
 
-            // The bar right below:
+            // region The bar right below:
             stroke(255);
             strokeWeight(2);
             line(0, Sketch.qy, width, Sketch.qy);
+            // endregion
+            // endregion
 
             // region Draw a grid!
             // The bar at "half":
@@ -807,9 +823,12 @@ public class SketchWithScenes extends Sketch {
             line(this.verticalGridLine1x, Sketch.qy, this.verticalGridLine1x, height);
             line(this.verticalGridLine2x, Sketch.qy, this.verticalGridLine2x, height);
             // endregion
+            // endregion
 
+            // Draw the page!:
             switch (this.page) {
-                case 0:
+                case 0 -> {
+                    /*
                     // region The GitHub link!
                     pushStyle();
                     fill(0, 64, 214);
@@ -819,131 +838,344 @@ public class SketchWithScenes extends Sketch {
                       this.gridBoxHalfSize, Sketch.qy + this.gridBoxQuarterSize);
                     popStyle();
                     // endregion
+                    */
 
-                    this.roundButton("A", this.allRects[1]);
-                    this.roundButton("B", this.allRects[2]);
-                    this.roundButton("X", this.allRects[3]);
-                    this.roundButton("Y", this.allRects[4]);
+                    this.drawRoundButton("A", this.allRects[1]);
+                    this.drawRoundButton("B", this.allRects[2]);
+                    this.drawRoundButton("X", this.allRects[3]);
+                    this.drawRoundButton("Y", this.allRects[4]);
 
-                case 1:
-                    break;
+                    // region Next page!
+                    pushStyle();
+                    textSize(48);
+                    text(MainActivity.appAct.getString(R.string.controlChoiceScene_next_page),
+                      this.allRects[5].center.x, this.allRects[5].center.y);
+                    popStyle();
+                    // endregion
+                }
+
+                case 1 -> {
+                    // region Previous page!
+                    pushStyle();
+                    textSize(48);
+                    text(MainActivity.appAct.getString(R.string.controlChoiceScene_prev_page),
+                      this.gridBoxHalfSize, Sketch.qy + this.gridBoxQuarterSize);
+                    popStyle();
+                    // endregion
+
+                    this.drawRectButton("START", this.allRects[1]);
+                    this.drawRectButton("SELECT", this.allRects[2]);
+                    this.drawRectButton("L", this.allRects[3]);
+                    this.drawRectButton("R", this.allRects[4]);
+
+                    // region Next page!
+                    pushStyle();
+                    textSize(48);
+                    text(MainActivity.appAct.getString(R.string.controlChoiceScene_next_page),
+                      this.allRects[5].center.x, this.allRects[5].center.y);
+                    popStyle();
+                    // endregion
+                }
+
+                case 2 -> {
+                    // region Previous page!
+                    pushStyle();
+                    textSize(48);
+                    text(MainActivity.appAct.getString(R.string.controlChoiceScene_prev_page),
+                      this.gridBoxHalfSize, Sketch.qy + this.gridBoxQuarterSize);
+                    popStyle();
+                    // endregion
+
+                    this.drawDpadButton(DpadDirection.UP, this.allRects[1]);
+                    this.drawDpadButton(DpadDirection.LEFT, this.allRects[2]);
+                    this.drawDpadButton(DpadDirection.DOWN, this.allRects[3]);
+                    this.drawDpadButton(DpadDirection.RIGHT, this.allRects[4]);
+
+                    // region Next page!
+                    pushStyle();
+                    textSize(48);
+                    text(MainActivity.appAct.getString(R.string.controlChoiceScene_next_page),
+                      this.allRects[5].center.x, this.allRects[5].center.y);
+                    popStyle();
+                    // endregion
+                }
+
+                case 3 -> {
+                    // region Previous page!
+                    pushStyle();
+                    textSize(48);
+                    text(MainActivity.appAct.getString(R.string.controlChoiceScene_prev_page),
+                      this.gridBoxHalfSize, Sketch.qy + this.gridBoxQuarterSize);
+                    popStyle();
+                    // endregion
+
+                    this.drawThumbstick(this.allRects[1]);
+                    this.drawTouchpad(this.allRects[2]);
+
+                    // region The GitHub link! Again!
+                    pushStyle();
+                    fill(0, 64, 214);
+                    textSize(48);
+                    text(MainActivity.appAct.getString(
+                        R.string.controlChoiceScene_add_more),
+                      this.allRects[4].center.x, this.allRects[4].center.y);
+                    popStyle();
+                    // endregion
+                }
             }
 
             popMatrix();
             popStyle();
         }
 
-        private void roundButton(String p_text, AgcRectangle p_rect) {
+        private void goToGithub() {
+            link("""
+              https://github.com/Brahvim/AndroidGameControllerClient""");
+        }
+
+        // region "Statically" drawing the buttons.
+        private void drawRoundButton(String p_text, AgcRectangle p_rect) {
             pushMatrix();
             pushStyle();
             translate(p_rect.center.x, p_rect.center.y);
             scale(150, 150);
+            // "Break your methods at logical points" - GFG article on Java optimization.
+            // I trust this advice because the JIT exists! ":D!
             ButtonRendererBase.displayDraw(g, p_text, ButtonShape.ROUND, false);
             popStyle();
             popMatrix();
         }
 
+        private void drawRectButton(String p_text, AgcRectangle p_rect) {
+            pushMatrix();
+            pushStyle();
+            translate(p_rect.center.x, p_rect.center.y);
+            scale(150, 150);
+            // "Break your methods at logical points" - GFG article on Java optimization.
+            // I trust this advice because the JIT exists! ":D!
+            ButtonRendererBase.displayDraw(g, p_text, ButtonShape.RECTANGLE, false);
+            popStyle();
+            popMatrix();
+        }
+
+        private void drawDpadButton(DpadDirection p_dir, AgcRectangle p_rect) {
+            pushMatrix();
+            pushStyle();
+            translate(p_rect.center.x, p_rect.center.y);
+            scale(100, 100);
+            DpadButtonRendererBase.displayDraw(g, p_dir, false);
+            popMatrix();
+            popStyle();
+        }
+
+        private void drawThumbstick(AgcRectangle p_rect) {
+            pushMatrix();
+            pushStyle();
+
+            noFill();
+            strokeWeight(6);
+            ellipse(p_rect.center.x, p_rect.center.y, 80, 80);
+
+            noStroke();
+            fill(255);
+            ellipse(p_rect.center.x, p_rect.center.y, 20, 20);
+
+            popStyle();
+            popMatrix();
+        }
+
+        private void drawTouchpad(AgcRectangle p_rect) {
+            this.drawRectButton("", p_rect);
+        }
+        // endregion
+
         @Override
         public void touchEnded(TouchEvent p_touchEvent) {
+            // region Figuring out ish-shtuff.
             if (Sketch.listOfUnprojectedTouches.size() < 1)
                 return;
 
             PVector touch = Sketch.mouse, controlPos = new PVector(/*Sketch.cx, Sketch.cy*/);
 
             // region Decide where the new control will be placed.
-            if (this.config == null)
+            if (Sketch.config == null)
                 controlPos.set(Sketch.cx, Sketch.cy);
             else /* Place at the midpoint of all controls! */ {
                 int totalControls = 0;
                 //ArrayList<> list;
 
-                if (this.config.buttons != null) {
-                    for (ButtonConfig c : this.config.buttons)
+                if (Sketch.config.buttons != null) {
+                    for (ButtonConfig c : Sketch.config.buttons)
                         controlPos.add(c.transform);
-                    totalControls += this.config.buttons.size();
+                    totalControls += Sketch.config.buttons.size();
                 }
 
-                if (this.config.dpadButtons != null) {
-                    for (DpadButtonConfig c : this.config.dpadButtons)
+                if (Sketch.config.dpadButtons != null) {
+                    for (DpadButtonConfig c : Sketch.config.dpadButtons)
                         controlPos.add(c.transform);
-                    totalControls += this.config.dpadButtons.size();
+                    totalControls += Sketch.config.dpadButtons.size();
                 }
 
-                if (this.config.thumbsticks != null) {
-                    for (ThumbstickConfig c : this.config.thumbsticks)
+                if (Sketch.config.thumbsticks != null) {
+                    for (ThumbstickConfig c : Sketch.config.thumbsticks)
                         controlPos.add(c.transform);
-                    totalControls += this.config.thumbsticks.size();
+                    totalControls += Sketch.config.thumbsticks.size();
                 }
 
-                if (this.config.touchpads != null) {
-                    for (TouchpadConfig c : this.config.touchpads)
+                if (Sketch.config.touchpads != null) {
+                    for (TouchpadConfig c : Sketch.config.touchpads)
                         controlPos.add(c.transform);
-                    totalControls += this.config.touchpads.size();
+                    totalControls += Sketch.config.touchpads.size();
                 }
 
                 controlPos.div(totalControls);
             }
             // endregion
+            // endregion
 
-            if (touch.y > Sketch.qy)
+            if (touch.y > Sketch.qy) {
+                if (Sketch.config == null) {
+                    Sketch.config = new AgcConfigurationPacket();
+                    Sketch.config.initLists();
+                }
+
+                if (Sketch.config.anyConfigArrayisNull())
+                    Sketch.config.initLists();
+
                 for (int i = 0; i < 6; i++)
                     if (allRects[i].contains(touch)) {
                         switch (this.page) {
                             case 0:
                                 switch (i) {
-                                    case 0:
-                                        Sketch.config.buttons.add(new ButtonConfig());
-                                        break;
-
                                     case 1:
+                                        Sketch.config.buttons.add(new ButtonConfig(controlPos,
+                                          new PVector(150, 150), "A", ButtonShape.ROUND));
                                         break;
 
                                     case 2:
+                                        Sketch.config.buttons.add(new ButtonConfig(controlPos,
+                                          new PVector(150, 150), "B", ButtonShape.ROUND));
                                         break;
 
                                     case 3:
+                                        Sketch.config.buttons.add(new ButtonConfig(controlPos,
+                                          new PVector(150, 150), "X", ButtonShape.ROUND));
                                         break;
 
                                     case 4:
+                                        Sketch.config.buttons.add(new ButtonConfig(controlPos,
+                                          new PVector(150, 150), "Y", ButtonShape.ROUND));
                                         break;
 
                                     case 5:
-                                        this.page++;
-                                        break;
+                                        this.page = 1;
+                                        return;
 
                                     default:
+                                        return;
                                 }
                                 break;
 
                             case 1:
                                 switch (i) {
                                     case 0:
-                                        Sketch.config.buttons.add(null);
-                                        break;
+                                        this.page = 0;
+                                        return;
 
                                     case 1:
+                                        Sketch.config.buttons.add(new ButtonConfig(controlPos,
+                                          new PVector(120, 120), "START", ButtonShape.RECTANGLE));
                                         break;
 
                                     case 2:
+                                        Sketch.config.buttons.add(new ButtonConfig(controlPos,
+                                          new PVector(120, 120), "SELECT", ButtonShape.RECTANGLE));
                                         break;
 
                                     case 3:
+                                        Sketch.config.buttons.add(new ButtonConfig(controlPos,
+                                          new PVector(120, 120), "L", ButtonShape.RECTANGLE));
                                         break;
 
                                     case 4:
+                                        Sketch.config.buttons.add(new ButtonConfig(controlPos,
+                                          new PVector(120, 120), "R", ButtonShape.RECTANGLE));
                                         break;
 
                                     case 5:
+                                        this.page = 2;
+                                        return;
+
+                                    default:
+                                        return;
+                                }
+                                break;
+
+                            case 2:
+                                switch (i) {
+                                    case 0:
+                                        this.page = 1;
+                                        return;
+
+                                    case 1:
+                                        Sketch.config.dpadButtons.add(new DpadButtonConfig(controlPos,
+                                          new PVector(120, 120), DpadDirection.UP));
+                                        break;
+
+                                    case 2:
+                                        Sketch.config.dpadButtons.add(new DpadButtonConfig(controlPos,
+                                          new PVector(120, 120), DpadDirection.LEFT));
+                                        break;
+
+                                    case 3:
+                                        Sketch.config.dpadButtons.add(new DpadButtonConfig(controlPos,
+                                          new PVector(120, 120), DpadDirection.DOWN));
+                                        break;
+
+                                    case 4:
+                                        Sketch.config.dpadButtons.add(new DpadButtonConfig(controlPos,
+                                          new PVector(120, 120), DpadDirection.RIGHT));
+                                        break;
+
+                                    case 5:
+                                        this.page = 3;
+                                        return;
+
+                                    default:
+                                        return;
+                                }
+                                break;
+
+                            case 3:
+                                switch (i) {
+                                    case 0:
+                                        this.page = 2;
+                                        return;
+
+                                    case 1:
+                                        Sketch.config.thumbsticks.add(new ThumbstickConfig(
+                                          new PVector(80, 80), controlPos));
+                                        break;
+
+                                    case 2:
+                                        Sketch.config.touchpads.add(new TouchpadConfig(
+                                          new PVector(600, 800), controlPos));
+                                        break;
+
+                                    case 4:
+                                        this.goToGithub();
                                         break;
 
                                     default:
+                                        return;
                                 }
                                 break;
                         }
+
                         // The user selected something! Go back!:
                         Scene.setScene(editorScene);
                     }
-
+            }
         }
 
         @Override
@@ -953,8 +1185,8 @@ public class SketchWithScenes extends Sketch {
     };
 
     // The user gets a file picker to do that here.
-    // Just get to the point - scan only the directory AGC creates for configuration records!
-    // And please, use "initialization" (`.ini`) files! Serialization will break with updates!
+// Just get to the point - scan only the directory AGC creates for configuration records!
+// And please, use "initialization" (`.ini`) files! Serialization will break with updates!
     Scene configSelectionScene = new Scene() {
         ArrayList<AgcListElement> listElements;
         File configsDir = new File(MainActivity.AGC_DIR.getAbsolutePath().concat("configs"));
@@ -978,6 +1210,7 @@ public class SketchWithScenes extends Sketch {
                 this.label = p_label;
                 this.rect = new AgcRectangle(p_startX, p_startY, p_endX, p_endY);
             }
+
         }
 
         @Override
@@ -1038,7 +1271,7 @@ public class SketchWithScenes extends Sketch {
             Scene.setScene(MainActivity.inSession? workScene : loadScene);
         }
     };
-    // endregion
+// endregion
 
     // region `backgroundWithAlpha()` overloads.
     void backgroundWithAlpha(float p_grey, float p_alpha) {

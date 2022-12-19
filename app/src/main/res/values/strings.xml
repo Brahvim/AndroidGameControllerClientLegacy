@@ -46,6 +46,9 @@
     <string name="controlChoiceScene_heading">Select a control to add:</string>
 
     <string name="controlChoiceScene_add_more">Want more?</string>
+
+    <string name="controlChoiceScene_prev_page">Previous page!</string>
+    <string name="controlChoiceScene_next_page">Next page!</string>
     <!-- endregion -->
 
 

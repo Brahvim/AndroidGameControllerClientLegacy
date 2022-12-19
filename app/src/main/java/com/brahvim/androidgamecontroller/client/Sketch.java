@@ -19,10 +19,9 @@ import processing.opengl.PGraphicsOpenGL;
 
 public class Sketch extends PApplet {
     // region Fields! ":D!~
+    // region Stuff that makes AGC *GO!*:
     public static float refreshRate;
     public static AgcConfigurationPacket config = new AgcConfigurationPacket();
-
-    // region Stuff that makes AGC *GO!*:
     public static AgcClientSocket socket;
     public static String serverIp;
     // endregion
@@ -68,6 +67,8 @@ public class Sketch extends PApplet {
         cameraUp = new PVector(0, 1, 0);
         cameraPos = new PVector(cx, cy, 600);
         cameraCenter = new PVector(cx, cy);
+
+        Sketch.config.initLists();
 
         // region Processing style settings.
         Sketch.DEFAULT_FONT = createFont("SansSerif", Sketch.DEFAULT_FONT_SIZE);
