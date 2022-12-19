@@ -10,7 +10,7 @@ import com.brahvim.androidgamecontroller.serial.configs.TouchpadConfig;
 
 import processing.core.PVector;
 
-public class TouchpadRenderForClient extends TouchpadRendererBase implements ClientRenderer {
+public class TouchpadRendererForClient extends TouchpadRendererBase implements ClientRenderer {
     private TouchpadConfig.TrackingPolicy trackingPolicy = TouchpadConfig.TrackingPolicy.FIRST;
     private PVector colStart, colEnd;
     private int lastTouchMillis;
@@ -19,7 +19,7 @@ public class TouchpadRenderForClient extends TouchpadRendererBase implements Cli
     // TODO: Make a variation of a touchpad allowing the PC screen to act like a touch screen,
     //  and not just a mouse-only touchpad! (Sadly, this is where screencasting makes sense!)
 
-    public TouchpadRenderForClient(TouchpadConfig p_config) {
+    public TouchpadRendererForClient(TouchpadConfig p_config) {
         super(p_config);
         ClientRenderer.all.add(this);
 

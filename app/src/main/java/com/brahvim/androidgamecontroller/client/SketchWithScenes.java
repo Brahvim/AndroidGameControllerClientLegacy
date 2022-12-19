@@ -10,10 +10,8 @@ import com.brahvim.androidgamecontroller.client.clientrender.ButtonRendererForCl
 import com.brahvim.androidgamecontroller.client.clientrender.ClientRenderer;
 import com.brahvim.androidgamecontroller.client.clientrender.DpadButtonRendererForClient;
 import com.brahvim.androidgamecontroller.client.clientrender.ThumbstickRendererForClient;
-import com.brahvim.androidgamecontroller.client.clientrender.TouchpadRenderForClient;
+import com.brahvim.androidgamecontroller.client.clientrender.TouchpadRendererForClient;
 import com.brahvim.androidgamecontroller.client.easings.SineWave;
-import com.brahvim.androidgamecontroller.render.ButtonRendererBase;
-import com.brahvim.androidgamecontroller.render.DpadButtonRendererBase;
 import com.brahvim.androidgamecontroller.serial.ButtonShape;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
 import com.brahvim.androidgamecontroller.serial.DpadDirection;
@@ -36,15 +34,6 @@ public class SketchWithScenes extends Sketch {
     void appStart() {
         Scene.setScene(loadScene);
     }
-
-    // Scene flow:
-
-    // `loadScene` -> `workScene`
-    // `loadScene` -> `configSelectionScene` -> `loadScene` -> `workScene`
-
-    // `loadScene` -> `configSelectionScene` -> `editorScene` -> `workScene`
-    // `loadScene` -> `configSelectionScene` -> `editorScene` -> `controlChoiceScene` -> `workScene`
-
 
     // region Scene 'defs'!
     Scene loadScene = new Scene() {
@@ -272,11 +261,9 @@ public class SketchWithScenes extends Sketch {
     };
 
     Scene workScene = new Scene() {
-        AgcConfigurationPacket config;
-
         ArrayList<ButtonRendererForClient> buttonRenderers;
         ArrayList<DpadButtonRendererForClient> dpadButtonRenderers;
-        ArrayList<TouchpadRenderForClient> touchpadRenderers;
+        ArrayList<TouchpadRendererForClient> touchpadRenderers;
         ArrayList<ThumbstickRendererForClient> thumbstickRenderers;
 
         @Override
@@ -285,19 +272,19 @@ public class SketchWithScenes extends Sketch {
             frameRate(Sketch.refreshRate);
             textSize(Sketch.DEFAULT_FONT_SIZE);
 
-            this.config = new AgcConfigurationPacket();
+            Sketch.config = new AgcConfigurationPacket();
 
             // region Preparing the configuration packet.
             // TODO: Make a settings file for these little things!
-            this.config.agcVersion = "v1.0.0";
-            this.config.appStartMilliSinceEpoch =
+            Sketch.config.agcVersion = "v1.0.0";
+            Sketch.config.appStartMilliSinceEpoch =
               System.currentTimeMillis() - MainActivity.sketch.millis();
-            this.config.screenDimensions = new PVector(width, height);
+            Sketch.config.screenDimensions = new PVector(width, height);
 
-            this.config.buttons = new ArrayList<>();
-            this.config.dpadButtons = new ArrayList<>();
-            this.config.thumbsticks = new ArrayList<>();
-            this.config.touchpads = new ArrayList<>();
+            Sketch.config.buttons = new ArrayList<>();
+            Sketch.config.dpadButtons = new ArrayList<>();
+            Sketch.config.thumbsticks = new ArrayList<>();
+            Sketch.config.touchpads = new ArrayList<>();
             // endregion
 
             // region Makin' `ArrayList`s!
@@ -307,18 +294,18 @@ public class SketchWithScenes extends Sketch {
             this.thumbstickRenderers = new ArrayList<>();
             // endregion
 
-            // Don't forget `this.config.addObject()` when making new this.configurations!
+            // Don't forget `Sketch.config.addObject()` when making new this.configurations!
 
             // region Making buttons!
             this.buttonRenderers.add(new ButtonRendererForClient(
-              this.config.addConfig(new ButtonConfig(
+              Sketch.config.addConfig(new ButtonConfig(
                 new PVector(Sketch.q3x - 90, Sketch.q3y + 50),
                 new PVector(150, 150),
                 "A"))
             ));
 
             this.buttonRenderers.add(new ButtonRendererForClient(
-              this.config.addConfig(new ButtonConfig(
+              Sketch.config.addConfig(new ButtonConfig(
                 new PVector(Sketch.q3x + 90, Sketch.q3y + 50),
                 new PVector(150, 150),
                 "B"))
@@ -327,14 +314,14 @@ public class SketchWithScenes extends Sketch {
 
             // region Making DPAD buttons!
             this.dpadButtonRenderers.add(new DpadButtonRendererForClient(
-              this.config.addConfig(new DpadButtonConfig(
+              Sketch.config.addConfig(new DpadButtonConfig(
                 new PVector(Sketch.qx - 80, Sketch.q3y),
                 new PVector(100, 100),
                 DpadDirection.LEFT))
             ));
 
             this.dpadButtonRenderers.add(new DpadButtonRendererForClient(
-              this.config.addConfig(new DpadButtonConfig(
+              Sketch.config.addConfig(new DpadButtonConfig(
                 new PVector(Sketch.qx + 80, Sketch.q3y),
                 new PVector(100, 100),
                 DpadDirection.RIGHT))
@@ -342,8 +329,8 @@ public class SketchWithScenes extends Sketch {
             // endregion
 
             // region A touchpad!
-            this.touchpadRenderers.add(new TouchpadRenderForClient(
-              this.config.addConfig(new TouchpadConfig(
+            this.touchpadRenderers.add(new TouchpadRendererForClient(
+              Sketch.config.addConfig(new TouchpadConfig(
                 new PVector(600, 800),
                 new PVector(Sketch.q3x, Sketch.qy)
               ))));
@@ -351,7 +338,7 @@ public class SketchWithScenes extends Sketch {
 
             // region A thumbstick too! ...yeah, I gotta test things out, sorry...
             this.thumbstickRenderers.add(new ThumbstickRendererForClient(
-              this.config.addConfig(new ThumbstickConfig(
+              Sketch.config.addConfig(new ThumbstickConfig(
                 new PVector(80, 80),
                 new PVector(Sketch.qx, Sketch.qy)
               ))
@@ -360,13 +347,11 @@ public class SketchWithScenes extends Sketch {
 
             //System.out.println("Configuration-to-state mapping numbers:");
             //for (ButtonRendererForClient r : this.buttonRenderers) {
-            //System.out.printf("\t`%d`\n",r.this.config.controlNumber);
+            //System.out.printf("\t`%d`\n",r.Sketch.config.controlNumber);
             //}
 
-            Sketch.config = this.config;
-
             socket.sendCode(RequestCode.CLIENT_SENDS_CONFIG,
-              ByteSerial.encode(this.config),
+              ByteSerial.encode(Sketch.config),
               serverIp, RequestCode.SERVER_PORT);
         }
 
@@ -686,12 +671,40 @@ public class SketchWithScenes extends Sketch {
                 Sketch.config = new AgcConfigurationPacket();
                 Sketch.config.initLists();
             }
+
+            if (Sketch.config.anyConfigArrayisNull())
+                Sketch.config.initLists();
+
+            for (ButtonConfig c : Sketch.config.buttons)
+                ClientRenderer.all.add(new ButtonRendererForClient(c));
+
+            for (DpadButtonConfig c : Sketch.config.dpadButtons)
+                ClientRenderer.all.add(new DpadButtonRendererForClient(c));
+
+            for (ThumbstickConfig c : Sketch.config.thumbsticks)
+                ClientRenderer.all.add(new ThumbstickRendererForClient(c));
+
+            for (TouchpadConfig c : Sketch.config.touchpads)
+                ClientRenderer.all.add(new TouchpadRendererForClient(c));
         }
 
         @Override
         public void draw() {
             background(0);
+
+            for (int i = 0; i < ClientRenderer.all.size(); i++)
+                ClientRenderer.all.get(i).draw(g);
         }
+
+        // region Touch events.
+        @Override
+        public void touchStarted(TouchEvent p_touchEvent) {
+        }
+
+        @Override
+        public void touchEnded(TouchEvent p_touchEvent) {
+        }
+        // endregion
 
         @Override
         public void onBackPressed() {
@@ -840,10 +853,10 @@ public class SketchWithScenes extends Sketch {
                     // endregion
                     */
 
-                    this.drawRoundButton("A", this.allRects[1]);
-                    this.drawRoundButton("B", this.allRects[2]);
-                    this.drawRoundButton("X", this.allRects[3]);
-                    this.drawRoundButton("Y", this.allRects[4]);
+                    StaticDraw.drawRoundButton(g, "A", this.allRects[1]);
+                    StaticDraw.drawRoundButton(g, "B", this.allRects[2]);
+                    StaticDraw.drawRoundButton(g, "X", this.allRects[3]);
+                    StaticDraw.drawRoundButton(g, "Y", this.allRects[4]);
 
                     // region Next page!
                     pushStyle();
@@ -863,10 +876,10 @@ public class SketchWithScenes extends Sketch {
                     popStyle();
                     // endregion
 
-                    this.drawRectButton("START", this.allRects[1]);
-                    this.drawRectButton("SELECT", this.allRects[2]);
-                    this.drawRectButton("L", this.allRects[3]);
-                    this.drawRectButton("R", this.allRects[4]);
+                    StaticDraw.drawRectButton(g, "START", this.allRects[1]);
+                    StaticDraw.drawRectButton(g, "SELECT", this.allRects[2]);
+                    StaticDraw.drawRectButton(g, "L", this.allRects[3]);
+                    StaticDraw.drawRectButton(g, "R", this.allRects[4]);
 
                     // region Next page!
                     pushStyle();
@@ -886,10 +899,10 @@ public class SketchWithScenes extends Sketch {
                     popStyle();
                     // endregion
 
-                    this.drawDpadButton(DpadDirection.UP, this.allRects[1]);
-                    this.drawDpadButton(DpadDirection.LEFT, this.allRects[2]);
-                    this.drawDpadButton(DpadDirection.DOWN, this.allRects[3]);
-                    this.drawDpadButton(DpadDirection.RIGHT, this.allRects[4]);
+                    StaticDraw.drawDpadButton(g, DpadDirection.UP, this.allRects[1]);
+                    StaticDraw.drawDpadButton(g, DpadDirection.LEFT, this.allRects[2]);
+                    StaticDraw.drawDpadButton(g, DpadDirection.DOWN, this.allRects[3]);
+                    StaticDraw.drawDpadButton(g, DpadDirection.RIGHT, this.allRects[4]);
 
                     // region Next page!
                     pushStyle();
@@ -909,8 +922,8 @@ public class SketchWithScenes extends Sketch {
                     popStyle();
                     // endregion
 
-                    this.drawThumbstick(this.allRects[1]);
-                    this.drawTouchpad(this.allRects[2]);
+                    StaticDraw.drawThumbstick(g, this.allRects[1]);
+                    StaticDraw.drawTouchpad(g, this.allRects[2]);
 
                     // region The GitHub link! Again!
                     pushStyle();
@@ -932,62 +945,6 @@ public class SketchWithScenes extends Sketch {
             link("""
               https://github.com/Brahvim/AndroidGameControllerClient""");
         }
-
-        // region "Statically" drawing the buttons.
-        private void drawRoundButton(String p_text, AgcRectangle p_rect) {
-            pushMatrix();
-            pushStyle();
-            translate(p_rect.center.x, p_rect.center.y);
-            scale(150, 150);
-            // "Break your methods at logical points" - GFG article on Java optimization.
-            // I trust this advice because the JIT exists! ":D!
-            ButtonRendererBase.displayDraw(g, p_text, ButtonShape.ROUND, false);
-            popStyle();
-            popMatrix();
-        }
-
-        private void drawRectButton(String p_text, AgcRectangle p_rect) {
-            pushMatrix();
-            pushStyle();
-            translate(p_rect.center.x, p_rect.center.y);
-            scale(150, 150);
-            // "Break your methods at logical points" - GFG article on Java optimization.
-            // I trust this advice because the JIT exists! ":D!
-            ButtonRendererBase.displayDraw(g, p_text, ButtonShape.RECTANGLE, false);
-            popStyle();
-            popMatrix();
-        }
-
-        private void drawDpadButton(DpadDirection p_dir, AgcRectangle p_rect) {
-            pushMatrix();
-            pushStyle();
-            translate(p_rect.center.x, p_rect.center.y);
-            scale(100, 100);
-            DpadButtonRendererBase.displayDraw(g, p_dir, false);
-            popMatrix();
-            popStyle();
-        }
-
-        private void drawThumbstick(AgcRectangle p_rect) {
-            pushMatrix();
-            pushStyle();
-
-            noFill();
-            strokeWeight(6);
-            ellipse(p_rect.center.x, p_rect.center.y, 80, 80);
-
-            noStroke();
-            fill(255);
-            ellipse(p_rect.center.x, p_rect.center.y, 20, 20);
-
-            popStyle();
-            popMatrix();
-        }
-
-        private void drawTouchpad(AgcRectangle p_rect) {
-            this.drawRectButton("", p_rect);
-        }
-        // endregion
 
         @Override
         public void touchEnded(TouchEvent p_touchEvent) {
