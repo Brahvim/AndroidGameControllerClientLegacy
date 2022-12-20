@@ -276,78 +276,95 @@ public class SketchWithScenes extends Sketch {
             frameRate(Sketch.refreshRate);
             textSize(Sketch.DEFAULT_FONT_SIZE);
 
-            Sketch.config = new AgcConfigurationPacket();
+            if (Sketch.config == null
+              || Sketch.config.anyConfigArrayisNull()
+              || Sketch.config.anyConfigArrayisEmpty()) {
+                Sketch.config = new AgcConfigurationPacket();
 
-            // region Preparing the configuration packet.
-            // TODO: Make a settings file for these little things!
-            Sketch.config.agcVersion = "v1.0.0";
-            Sketch.config.appStartMilliSinceEpoch =
-              System.currentTimeMillis() - MainActivity.sketch.millis();
-            Sketch.config.screenDimensions = new PVector(width, height);
+                // region Preparing the configuration packet.
+                // TODO: Make a settings file for these little things!
+                Sketch.config.agcVersion = "v1.0.0";
+                Sketch.config.appStartMilliSinceEpoch =
+                  System.currentTimeMillis() - MainActivity.sketch.millis();
+                Sketch.config.screenDimensions = new PVector(width, height);
 
-            Sketch.config.buttons = new ArrayList<>();
-            Sketch.config.dpadButtons = new ArrayList<>();
-            Sketch.config.thumbsticks = new ArrayList<>();
-            Sketch.config.touchpads = new ArrayList<>();
-            // endregion
+                Sketch.config.buttons = new ArrayList<>();
+                Sketch.config.dpadButtons = new ArrayList<>();
+                Sketch.config.thumbsticks = new ArrayList<>();
+                Sketch.config.touchpads = new ArrayList<>();
+                // endregion
 
-            // region Makin' `ArrayList`s!
-            this.buttonRenderers = new ArrayList<>();
-            this.dpadButtonRenderers = new ArrayList<>();
-            this.touchpadRenderers = new ArrayList<>();
-            this.thumbstickRenderers = new ArrayList<>();
-            // endregion
+                // region Makin' `ArrayList`s!
+                this.buttonRenderers = new ArrayList<>();
+                this.dpadButtonRenderers = new ArrayList<>();
+                this.touchpadRenderers = new ArrayList<>();
+                this.thumbstickRenderers = new ArrayList<>();
+                // endregion
 
-            // Don't forget `Sketch.config.addObject()` when making new this.configurations!
+                // Don't forget `Sketch.config.addObject()` when making new configurations!
 
-            // region Making buttons!
-            this.buttonRenderers.add(new ButtonRendererForClient(
-              Sketch.config.addConfig(new ButtonConfig(
-                new PVector(Sketch.q3x - 90, Sketch.q3y + 50),
-                new PVector(150, 150),
-                "A"))
-            ));
+                // region Making buttons!
+                this.buttonRenderers.add(new ButtonRendererForClient(
+                  Sketch.config.addConfig(new ButtonConfig(
+                    new PVector(Sketch.q3x - 90, Sketch.q3y + 50),
+                    new PVector(150, 150),
+                    "A"))
+                ));
 
-            this.buttonRenderers.add(new ButtonRendererForClient(
-              Sketch.config.addConfig(new ButtonConfig(
-                new PVector(Sketch.q3x + 90, Sketch.q3y + 50),
-                new PVector(150, 150),
-                "B"))
-            ));
-            // endregion
+                this.buttonRenderers.add(new ButtonRendererForClient(
+                  Sketch.config.addConfig(new ButtonConfig(
+                    new PVector(Sketch.q3x + 90, Sketch.q3y + 50),
+                    new PVector(150, 150),
+                    "B"))
+                ));
+                // endregion
 
-            // region Making DPAD buttons!
-            this.dpadButtonRenderers.add(new DpadButtonRendererForClient(
-              Sketch.config.addConfig(new DpadButtonConfig(
-                new PVector(Sketch.qx - 80, Sketch.q3y),
-                new PVector(100, 100),
-                DpadDirection.LEFT))
-            ));
+                // region Making DPAD buttons!
+                this.dpadButtonRenderers.add(new DpadButtonRendererForClient(
+                  Sketch.config.addConfig(new DpadButtonConfig(
+                    new PVector(Sketch.qx - 80, Sketch.q3y),
+                    new PVector(100, 100),
+                    DpadDirection.LEFT))
+                ));
 
-            this.dpadButtonRenderers.add(new DpadButtonRendererForClient(
-              Sketch.config.addConfig(new DpadButtonConfig(
-                new PVector(Sketch.qx + 80, Sketch.q3y),
-                new PVector(100, 100),
-                DpadDirection.RIGHT))
-            ));
-            // endregion
+                this.dpadButtonRenderers.add(new DpadButtonRendererForClient(
+                  Sketch.config.addConfig(new DpadButtonConfig(
+                    new PVector(Sketch.qx + 80, Sketch.q3y),
+                    new PVector(100, 100),
+                    DpadDirection.RIGHT))
+                ));
+                // endregion
 
-            // region A touchpad!
-            this.touchpadRenderers.add(new TouchpadRendererForClient(
-              Sketch.config.addConfig(new TouchpadConfig(
-                new PVector(600, 800),
-                new PVector(Sketch.q3x, Sketch.qy)
-              ))));
-            // endregion
+                // region A touchpad!
+                this.touchpadRenderers.add(new TouchpadRendererForClient(
+                  Sketch.config.addConfig(new TouchpadConfig(
+                    new PVector(600, 800),
+                    new PVector(Sketch.q3x, Sketch.qy)
+                  ))));
+                // endregion
 
-            // region A thumbstick too! ...yeah, I gotta test things out, sorry...
-            this.thumbstickRenderers.add(new ThumbstickRendererForClient(
-              Sketch.config.addConfig(new ThumbstickConfig(
-                new PVector(80, 80),
-                new PVector(Sketch.qx, Sketch.qy)
-              ))
-            ));
-            // endregion
+                // region A thumbstick too! ...yeah, I gotta test things out, sorry...
+                this.thumbstickRenderers.add(new ThumbstickRendererForClient(
+                  Sketch.config.addConfig(new ThumbstickConfig(
+                    new PVector(80, 80),
+                    new PVector(Sketch.qx, Sketch.qy)
+                  ))
+                ));
+                // endregion
+
+            }
+
+            // Initalize the renderers using our configuration data:
+            else {
+                for (ButtonConfig c : Sketch.config.buttons)
+                    this.buttonRenderers.add(new ButtonRendererForClient(c));
+                for (DpadButtonConfig c : Sketch.config.dpadButtons)
+                    this.dpadButtonRenderers.add(new DpadButtonRendererForClient(c));
+                for (ThumbstickConfig c : Sketch.config.thumbsticks)
+                    this.thumbstickRenderers.add(new ThumbstickRendererForClient(c));
+                for (TouchpadConfig c : Sketch.config.touchpads)
+                    this.touchpadRenderers.add(new TouchpadRendererForClient(c));
+            }
 
             //System.out.println("Configuration-to-state mapping numbers:");
             //for (ButtonRendererForClient r : this.buttonRenderers) {
@@ -448,7 +465,8 @@ public class SketchWithScenes extends Sketch {
         // endregion
         // endregion
 
-        // Giving up on class "HoldableText" for performance. There'll be only 3 instances anyway.
+        // Giving up on class "HoldableText" for performance. There'll be only 3 instances
+        // anyway.
         /*
         class HoldableText {
             private final static ArrayList<HoldableText> INSTANCES = new ArrayList<>(3);
@@ -720,8 +738,6 @@ public class SketchWithScenes extends Sketch {
                 if (state.ppressed && state.pressed) {
                     r.setPosition(Sketch.mouse);
                 }
-
-
             }
         }
 
@@ -837,7 +853,8 @@ public class SketchWithScenes extends Sketch {
                 // region Old method...
                 //rect(
                 //touch.x % this.gridBoxSize * (touch.x * this.gridBoxSize),
-                //(touch.y % this.gridBoxHalfSize * (touch.x * this.gridBoxHalfSize)) - Sketch.qy,
+                //(touch.y % this.gridBoxHalfSize * (touch.x * this.gridBoxHalfSize)) -
+                // Sketch.qy,
                 //this.gridBoxSize, this.gridBoxHalfSize);
                 // endregion
             }
@@ -1069,12 +1086,14 @@ public class SketchWithScenes extends Sketch {
 
                                     case 1:
                                         Sketch.config.buttons.add(new ButtonConfig(controlPos,
-                                          new PVector(120, 120), "START", ButtonShape.RECTANGLE));
+                                          new PVector(120, 120), "START",
+                                          ButtonShape.RECTANGLE));
                                         break;
 
                                     case 2:
                                         Sketch.config.buttons.add(new ButtonConfig(controlPos,
-                                          new PVector(120, 120), "SELECT", ButtonShape.RECTANGLE));
+                                          new PVector(120, 120), "SELECT",
+                                          ButtonShape.RECTANGLE));
                                         break;
 
                                     case 3:
@@ -1170,8 +1189,8 @@ public class SketchWithScenes extends Sketch {
     };
 
     // The user gets a file picker to do that here.
-// Just get to the point - scan only the directory AGC creates for configuration records!
-// And please, use "initialization" (`.ini`) files! Serialization will break with updates!
+    // Just get to the point - scan only the directory AGC creates for configuration records!
+    // And please, use "initialization" (`.ini`) files! Serialization will break with updates!
     Scene configSelectionScene = new Scene() {
         ArrayList<AgcListElement> listElements;
         File configsDir = new File(MainActivity.AGC_DIR.getAbsolutePath().concat("configs"));
@@ -1256,7 +1275,7 @@ public class SketchWithScenes extends Sketch {
             Scene.setScene(MainActivity.inSession? workScene : loadScene);
         }
     };
-// endregion
+    // endregion
 
     // region `backgroundWithAlpha()` overloads.
     void backgroundWithAlpha(float p_grey, float p_alpha) {

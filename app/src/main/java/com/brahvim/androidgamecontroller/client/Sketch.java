@@ -27,7 +27,8 @@ public class Sketch extends PApplet {
     // endregion
 
     // region Boilerplate-y stuff.
-    public final static PVector mouse = new PVector();
+    public final static PVector mouse = new PVector(), mouseDelta = new PVector();
+    public static PVector pmouse = new PVector();
     public final static ArrayList<PVector> listOfUnprojectedTouches = new ArrayList<>(10);
     public volatile static ArrayList<PVector> plistOfUnprojectedTouches = new ArrayList<>(10);
     // ^^^ Funny how `ArrayList`s have a capacity of `10` by default, haha.
@@ -187,6 +188,7 @@ public class Sketch extends PApplet {
         frameStartTime = millis(); // Timestamp.
         frameTime = frameStartTime - pframeTime;
         pframeTime = frameStartTime;
+        Sketch.mouseDelta.set(PVector.sub(Sketch.mouse, Sketch.pmouse));
 
         // No camera, since I'm using mapping for un-projection.
         // Would be a good idea to just *use* un-projection!...
@@ -226,6 +228,7 @@ public class Sketch extends PApplet {
             mouse.set(Sketch.listOfUnprojectedTouches.get(0));
 
         Sketch.plistOfUnprojectedTouches = Sketch.listOfUnprojectedTouches;
+        Sketch.pmouse = Sketch.mouse;
     }
 
     // region Custom methods.

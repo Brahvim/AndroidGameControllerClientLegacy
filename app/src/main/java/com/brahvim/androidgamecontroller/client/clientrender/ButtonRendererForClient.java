@@ -35,6 +35,7 @@ public class ButtonRendererForClient extends ButtonRendererBase implements Clien
 
     // No `draw()` - it is inherited.
 
+    // region Inherited from `ClientRenderer`
     @Override
     public ButtonConfig getConfig() {
         return super.config;
@@ -56,6 +57,21 @@ public class ButtonRendererForClient extends ButtonRendererBase implements Clien
     }
 
     @Override
+    public PVector getPosition() {
+        return super.config.transform;
+    }
+
+    @Override
+    public void addToPosition(PVector p_posAddent) {
+        super.config.transform.add(p_posAddent);
+    }
+
+    @Override
+    public void addToPosition(float p_x, float p_y) {
+        super.config.transform.add(p_x, p_y);
+    }
+
+    @Override
     public void setScale(PVector p_pos) {
         super.config.scale.set(p_pos);
     }
@@ -65,6 +81,22 @@ public class ButtonRendererForClient extends ButtonRendererBase implements Clien
         super.config.scale.set(p_x, p_y);
     }
 
+    @Override
+    public PVector getScale() {
+        return super.config.scale;
+    }
+
+    @Override
+    public void addToScale(PVector p_posAddent) {
+        super.config.scale.add(p_posAddent);
+    }
+
+    @Override
+    public void addToScale(float p_x, float p_y) {
+        super.config.scale.add(p_x, p_y);
+    }
+
+    @Override
     public void recordTouch() {
         this.state.pressed = false;
 
@@ -84,6 +116,7 @@ public class ButtonRendererForClient extends ButtonRendererBase implements Clien
 
         super.state.pressed &= MainActivity.sketch.mousePressed;
     }
+    // endregion
 
     private void sendStateIfChanged() {
         // If the state didn't change, let's go back!:

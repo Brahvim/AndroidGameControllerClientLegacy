@@ -36,6 +36,7 @@ public class TouchpadRendererForClient extends TouchpadRendererBase implements C
           transform.y - (scale.y * 0.28125f));
     }
 
+    // region Inherited from `ClientRenderer`
     @Override
     public TouchpadConfig getConfig() {
         return super.config;
@@ -57,6 +58,21 @@ public class TouchpadRendererForClient extends TouchpadRendererBase implements C
     }
 
     @Override
+    public PVector getPosition() {
+        return super.config.transform;
+    }
+
+    @Override
+    public void addToPosition(PVector p_posAddent) {
+        super.config.transform.add(p_posAddent);
+    }
+
+    @Override
+    public void addToPosition(float p_x, float p_y) {
+        super.config.transform.add(p_x, p_y);
+    }
+
+    @Override
     public void setScale(PVector p_pos) {
         super.config.scale.set(p_pos);
     }
@@ -66,23 +82,22 @@ public class TouchpadRendererForClient extends TouchpadRendererBase implements C
         super.config.scale.set(p_x, p_y);
     }
 
-    private void sendState() {
-        // TODO: Make the touchpad respond to two-finger taps as a right-click, otherwise, let it
-        //  respond only to single-taps.
-        // ^^^ The tab is necessary in comments that 'continue'!
-
-        //System.out.println("A touchpad's state changed, sending it over...");
-
-        //if (super.state.pressed != super.state.ppressed)
-        //System.out.printf("It was previously %s pressed and is now %spressed.\n",
-        //super.state.ppressed? "" : "not ",
-        //super.state.pressed? "" : "not ");
-
-        Sketch.socket.send(
-          ByteSerial.encode(super.state),
-          Sketch.serverIp, RequestCode.SERVER_PORT);
+    @Override
+    public PVector getScale() {
+        return super.config.scale;
     }
 
+    @Override
+    public void addToScale(PVector p_posAddent) {
+        super.config.scale.add(p_posAddent);
+    }
+
+    @Override
+    public void addToScale(float p_x, float p_y) {
+        super.config.scale.add(p_x, p_y);
+    }
+
+    @Override
     public void recordTouch() {
         super.state.ppressed = super.state.pressed;
 
@@ -112,6 +127,24 @@ public class TouchpadRendererForClient extends TouchpadRendererBase implements C
         super.state.pressed = CollisionAlgorithms.ptRect(
           super.state.mouse, this.colStart, this.colEnd) &&
           MainActivity.sketch.mousePressed;
+    }
+    // endregion
+
+    private void sendState() {
+        // TODO: Make the touchpad respond to two-finger taps as a right-click, otherwise, let it
+        //  respond only to single-taps.
+        // ^^^ The tab is necessary in comments that 'continue'!
+
+        //System.out.println("A touchpad's state changed, sending it over...");
+
+        //if (super.state.pressed != super.state.ppressed)
+        //System.out.printf("It was previously %s pressed and is now %spressed.\n",
+        //super.state.ppressed? "" : "not ",
+        //super.state.pressed? "" : "not ");
+
+        Sketch.socket.send(
+          ByteSerial.encode(super.state),
+          Sketch.serverIp, RequestCode.SERVER_PORT);
     }
 
     // region Touch events.

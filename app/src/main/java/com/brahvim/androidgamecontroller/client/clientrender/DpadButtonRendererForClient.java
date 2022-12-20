@@ -136,6 +136,7 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
         p_graphics.popStyle();
     }
 
+    // region Inherited from `ClientRenderer`
     @Override
     public DpadButtonConfig getConfig() {
         return super.config;
@@ -157,6 +158,21 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
     }
 
     @Override
+    public PVector getPosition() {
+        return super.config.transform;
+    }
+
+    @Override
+    public void addToPosition(PVector p_posAddent) {
+        super.config.transform.add(p_posAddent);
+    }
+
+    @Override
+    public void addToPosition(float p_x, float p_y) {
+        super.config.transform.add(p_x, p_y);
+    }
+
+    @Override
     public void setScale(PVector p_pos) {
         super.config.scale.set(p_pos);
     }
@@ -166,6 +182,22 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
         super.config.scale.set(p_x, p_y);
     }
 
+    @Override
+    public PVector getScale() {
+        return super.config.scale;
+    }
+
+    @Override
+    public void addToScale(PVector p_posAddent) {
+        super.config.scale.add(p_posAddent);
+    }
+
+    @Override
+    public void addToScale(float p_x, float p_y) {
+        super.config.scale.add(p_x, p_y);
+    }
+
+    @Override
     public void recordTouch() {
         super.state.pressed = false;
 
@@ -176,6 +208,7 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
                 break;
         }
     }
+    // endregion
 
     private void sendStateIfChanged() {
         // If the state didn't change, let's go back!:

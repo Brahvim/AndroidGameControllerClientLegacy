@@ -14,13 +14,29 @@ public interface ClientRenderer {
 
     <T> T getState();
 
-    void setPosition(float p_x, float p_y);
+    // region Position modification.
+    PVector getPosition();
 
     void setPosition(PVector p_pos);
 
-    void setScale(float p_x, float p_y);
+    void setPosition(float p_x, float p_y);
+
+    void addToPosition(PVector p_posAddent);
+
+    void addToPosition(float p_x, float p_y);
+    // endregion
+
+    // region Scale modification.
+    PVector getScale();
 
     void setScale(PVector p_pos);
+
+    void setScale(float p_x, float p_y);
+
+    void addToScale(PVector p_pos);
+
+    void addToScale(float p_x, float p_y);
+    // endregion
 
     void draw(@NotNull PGraphics p_graphics);
 
