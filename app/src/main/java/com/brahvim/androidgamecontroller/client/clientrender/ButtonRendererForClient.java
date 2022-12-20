@@ -7,6 +7,7 @@ import com.brahvim.androidgamecontroller.client.Sketch;
 import com.brahvim.androidgamecontroller.render.ButtonRendererBase;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
 import com.brahvim.androidgamecontroller.serial.configs.ButtonConfig;
+import com.brahvim.androidgamecontroller.serial.states.ButtonState;
 
 import processing.core.PVector;
 
@@ -34,7 +35,37 @@ public class ButtonRendererForClient extends ButtonRendererBase implements Clien
 
     // No `draw()` - it is inherited.
 
-    private void recordTouch() {
+    @Override
+    public ButtonConfig getConfig() {
+        return super.config;
+    }
+
+    @Override
+    public ButtonState getState() {
+        return super.state;
+    }
+
+    @Override
+    public void setPosition(PVector p_pos) {
+        super.config.transform.set(p_pos);
+    }
+
+    @Override
+    public void setPosition(float p_x, float p_y) {
+        super.config.transform.set(p_x, p_y);
+    }
+
+    @Override
+    public void setScale(PVector p_pos) {
+        super.config.scale.set(p_pos);
+    }
+
+    @Override
+    public void setScale(float p_x, float p_y) {
+        super.config.scale.set(p_x, p_y);
+    }
+
+    public void recordTouch() {
         this.state.pressed = false;
 
         for (PVector v : Sketch.listOfUnprojectedTouches) {

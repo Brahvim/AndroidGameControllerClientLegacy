@@ -212,14 +212,16 @@ public class Sketch extends PApplet {
             } else println("Current scene is `null`!");
         }
 
-        pushStyle();
-        fill(0, 255, 0);
-        for (PVector v : Sketch.listOfUnprojectedTouches) {
-            ellipse(v.x, v.y, 20, 20);
+        if (mousePressed) {
+            pushStyle();
+            fill(0, 255, 0);
+            for (PVector v : Sketch.listOfUnprojectedTouches)
+                ellipse(v.x, v.y, 20, 20);
+            popStyle();
         }
-        popStyle();
 
         // Also record the `mouse` vector here, haha:
+        // TODO: Put this condition into a `static boolean` so it isn't re-calculated.
         if (Sketch.listOfUnprojectedTouches.size() > 0)
             mouse.set(Sketch.listOfUnprojectedTouches.get(0));
 

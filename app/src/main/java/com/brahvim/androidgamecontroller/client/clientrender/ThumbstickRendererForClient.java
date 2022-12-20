@@ -6,6 +6,7 @@ import com.brahvim.androidgamecontroller.client.Sketch;
 import com.brahvim.androidgamecontroller.render.ThumbstickRendererBase;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
 import com.brahvim.androidgamecontroller.serial.configs.ThumbstickConfig;
+import com.brahvim.androidgamecontroller.serial.states.ThumbstickState;
 
 import processing.core.PVector;
 import processing.event.TouchEvent;
@@ -18,7 +19,37 @@ public class ThumbstickRendererForClient extends ThumbstickRendererBase implemen
 
     // No `draw()` - it is inherited, I guess.
 
-    private void recordTouch() {
+    @Override
+    public ThumbstickConfig getConfig() {
+        return super.config;
+    }
+
+    @Override
+    public ThumbstickState getState() {
+        return super.state;
+    }
+
+    @Override
+    public void setPosition(PVector p_pos) {
+        super.config.transform.set(p_pos);
+    }
+
+    @Override
+    public void setPosition(float p_x, float p_y) {
+        super.config.transform.set(p_x, p_y);
+    }
+
+    @Override
+    public void setScale(PVector p_pos) {
+        super.config.scale.set(p_pos);
+    }
+
+    @Override
+    public void setScale(float p_x, float p_y) {
+        super.config.scale.set(p_x, p_y);
+    }
+
+    public void recordTouch() {
         boolean measureOnlyDir = false;
 
         for (PVector v : Sketch.listOfUnprojectedTouches) {

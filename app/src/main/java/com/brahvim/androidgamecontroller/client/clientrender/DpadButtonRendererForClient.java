@@ -7,6 +7,7 @@ import com.brahvim.androidgamecontroller.client.Sketch;
 import com.brahvim.androidgamecontroller.render.DpadButtonRendererBase;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
 import com.brahvim.androidgamecontroller.serial.configs.DpadButtonConfig;
+import com.brahvim.androidgamecontroller.serial.states.DpadButtonState;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -135,7 +136,37 @@ public class DpadButtonRendererForClient extends DpadButtonRendererBase implemen
         p_graphics.popStyle();
     }
 
-    private void recordTouch() {
+    @Override
+    public DpadButtonConfig getConfig() {
+        return super.config;
+    }
+
+    @Override
+    public DpadButtonState getState() {
+        return super.state;
+    }
+
+    @Override
+    public void setPosition(PVector p_pos) {
+        super.config.transform.set(p_pos);
+    }
+
+    @Override
+    public void setPosition(float p_x, float p_y) {
+        super.config.transform.set(p_x, p_y);
+    }
+
+    @Override
+    public void setScale(PVector p_pos) {
+        super.config.scale.set(p_pos);
+    }
+
+    @Override
+    public void setScale(float p_x, float p_y) {
+        super.config.scale.set(p_x, p_y);
+    }
+
+    public void recordTouch() {
         super.state.pressed = false;
 
         for (PVector v : Sketch.listOfUnprojectedTouches) {

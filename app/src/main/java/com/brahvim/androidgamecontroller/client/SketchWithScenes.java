@@ -20,6 +20,7 @@ import com.brahvim.androidgamecontroller.serial.configs.ButtonConfig;
 import com.brahvim.androidgamecontroller.serial.configs.DpadButtonConfig;
 import com.brahvim.androidgamecontroller.serial.configs.ThumbstickConfig;
 import com.brahvim.androidgamecontroller.serial.configs.TouchpadConfig;
+import com.brahvim.androidgamecontroller.serial.states.StateBase;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -215,15 +216,16 @@ public class SketchWithScenes extends Sketch {
         */
 
         @Override
-        public void onReceive(byte[] p_data, String p_ip, int p_port) {
+        public void onReceive(RequestCode p_code, byte[] p_data, String p_ip, int p_port) {
             System.out.printf(
               "[LOAD SCENE] Received `%d` bytes from IP: `%s`, port:`%d`.\n",
               p_data.length, p_ip, p_port);
 
-            if (RequestCode.packetHasCode(p_data)) {
-                RequestCode code = RequestCode.fromReceivedPacket(p_data);
-                System.out.printf("[LOAD SCENE] It was a code, `%s`!\n", code.toString());
-                switch (code) {
+            // `p_data` containss EXTRA data if `p_code` is NOT `null`.
+            if (p_code != null) {
+                System.out.printf("[LOAD SCENE] It was a code, `%s`!\n", p_code.toString());
+
+                switch (p_code) {
                     case CLIENT_WAS_REGISTERED:
                         serverIp = p_ip;
                         MainActivity.inSession = true;
@@ -234,11 +236,13 @@ public class SketchWithScenes extends Sketch {
                         break;
                 }
             } // End of `packetHasCode()` check.
+
+            // `p_data` contains all data if `p_code` is `null`.
         } // End of `onReceive()`.
 
         @Override
         public void onBackPressed() {
-            agcExit();
+            Scene.setScene(exitScene);
         }
 
         public void sendAddMeRequest(boolean p_hotspotMode, ArrayList<String> p_networks) {
@@ -387,17 +391,16 @@ public class SketchWithScenes extends Sketch {
         // endregion
 
         @Override
-        public void onReceive(byte[] p_data, String p_ip, int p_port) {
+        public void onReceive(RequestCode p_code, byte[] p_data, String p_ip, int p_port) {
             System.out.printf("Received *some* bytes from IP: `%s`, on port:`%d`.\n",
               p_ip, p_port);
 
-            if (RequestCode.packetHasCode(p_data)) {
-                RequestCode code = RequestCode.fromReceivedPacket(p_data);
-                System.out.printf("It was a code, `%s`!\n", code.toString());
+            // `p_data` contains EXTRA data if `p_code` is NOT `null`.
+            if (p_code != null) {
+                System.out.printf("It was a code, `%s`!\n", p_code.toString());
 
-                switch (code) {
+                switch (p_code) {
                     case SERVER_CLOSE:
-                        MainActivity.inSession = false;
                         Scene.setScene(loadScene);
                         break;
 
@@ -405,11 +408,14 @@ public class SketchWithScenes extends Sketch {
                         break;
                 }
             } // End of `packetHasCode()` check,
+
+            // `p_data` contains all data if `p_code` is `null`.
         } // End of `onReceive()`.
 
         @Override
         public void onBackPressed() {
-            agcExit();
+            Scene.setScene(exitScene);
+            ClientRenderer.all.clear();
             //quickExitIfCan(); // Tells the server to exit if it can.
             //completeExit();
         }
@@ -699,10 +705,31 @@ public class SketchWithScenes extends Sketch {
         // region Touch events.
         @Override
         public void touchStarted(TouchEvent p_touchEvent) {
+            for (ClientRenderer r : ClientRenderer.all) {
+                r.recordTouch();
+            }
+        }
+
+        @Override
+        public void touchMoved(TouchEvent p_touchEvent) {
+            for (ClientRenderer r : ClientRenderer.all) {
+                r.recordTouch();
+
+                StateBase state = r.getState();
+                // Yes! That's how you know it was held!~ ^^
+                if (state.ppressed && state.pressed) {
+                    r.setPosition(Sketch.mouse);
+                }
+
+
+            }
         }
 
         @Override
         public void touchEnded(TouchEvent p_touchEvent) {
+            for (ClientRenderer r : ClientRenderer.all) {
+                r.recordTouch();
+            }
         }
         // endregion
 
@@ -716,6 +743,7 @@ public class SketchWithScenes extends Sketch {
             // "which confguration to use". They already know.
             //Scene.setScene(MainActivity.inSession? workScene : loadScene);
             Scene.setScene(exitScene);
+            ClientRenderer.all.clear();
         }
     };
 
@@ -1251,10 +1279,6 @@ public class SketchWithScenes extends Sketch {
 // endregion
 
     // region Stuff that helps AGC exit.
-    public void agcExit() {
-        Scene.setScene(exitScene);
-    }
-
     public void quickExitIfCan() {
         if (serverIp != null) {
             completeExit();

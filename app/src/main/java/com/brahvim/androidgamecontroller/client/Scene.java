@@ -1,5 +1,7 @@
 package com.brahvim.androidgamecontroller.client;
 
+import com.brahvim.androidgamecontroller.RequestCode;
+
 import java.util.ArrayList;
 
 public class Scene {
@@ -44,7 +46,7 @@ public class Scene {
     }
 
     // @SuppressWarnings("unused")
-    public void onReceive(byte[] p_data, String p_ip, int p_port) {
+    public void onReceive(RequestCode p_code, byte[] p_data, String p_ip, int p_port) {
     }
     // endregion
 

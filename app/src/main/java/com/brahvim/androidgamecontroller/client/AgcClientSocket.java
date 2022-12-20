@@ -90,9 +90,29 @@ public class AgcClientSocket extends UdpSocket {
 
     @Override
     public void onReceive(@NotNull byte[] p_data, String p_ip, int p_port) {
+        RequestCode code = null;
+        byte[] extraData = RequestCode.getPacketExtras(p_data);
+
+        if (RequestCode.packetHasCode(p_data)) {
+            code = RequestCode.fromReceivedPacket(p_data);
+            System.out.printf("It was a code, `%s`!\n", code.toString());
+
+            switch (code) {
+                case SERVER_CLOSE:
+                    MainActivity.inSession = false;
+                    break;
+
+                default:
+                    break;
+            }
+        } // End of `packetHasCode()` check.
+
         Scene currentScene = Scene.getCurrentScene();
         if (currentScene != null)
-            currentScene.onReceive(p_data, p_ip, p_port);
+            if (code == null)
+                currentScene.onReceive(null, p_data, p_ip, p_port);
+            else
+                currentScene.onReceive(code, extraData, p_ip, p_port);
     }
 
     // region Non-so-important Overrides.

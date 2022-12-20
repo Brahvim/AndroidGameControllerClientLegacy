@@ -7,6 +7,7 @@ import com.brahvim.androidgamecontroller.client.Sketch;
 import com.brahvim.androidgamecontroller.render.TouchpadRendererBase;
 import com.brahvim.androidgamecontroller.serial.ByteSerial;
 import com.brahvim.androidgamecontroller.serial.configs.TouchpadConfig;
+import com.brahvim.androidgamecontroller.serial.states.TouchpadState;
 
 import processing.core.PVector;
 
@@ -35,6 +36,36 @@ public class TouchpadRendererForClient extends TouchpadRendererBase implements C
           transform.y - (scale.y * 0.28125f));
     }
 
+    @Override
+    public TouchpadConfig getConfig() {
+        return super.config;
+    }
+
+    @Override
+    public TouchpadState getState() {
+        return super.state;
+    }
+
+    @Override
+    public void setPosition(PVector p_pos) {
+        super.config.transform.set(p_pos);
+    }
+
+    @Override
+    public void setPosition(float p_x, float p_y) {
+        super.config.transform.set(p_x, p_y);
+    }
+
+    @Override
+    public void setScale(PVector p_pos) {
+        super.config.scale.set(p_pos);
+    }
+
+    @Override
+    public void setScale(float p_x, float p_y) {
+        super.config.scale.set(p_x, p_y);
+    }
+
     private void sendState() {
         // TODO: Make the touchpad respond to two-finger taps as a right-click, otherwise, let it
         //  respond only to single-taps.
@@ -52,7 +83,7 @@ public class TouchpadRendererForClient extends TouchpadRendererBase implements C
           Sketch.serverIp, RequestCode.SERVER_PORT);
     }
 
-    private void recordTouches() {
+    public void recordTouch() {
         super.state.ppressed = super.state.pressed;
 
         int listSize = Sketch.listOfUnprojectedTouches.size();
@@ -98,19 +129,19 @@ public class TouchpadRendererForClient extends TouchpadRendererBase implements C
         else super.state.doubleTapped = false;
 
         // Get current state:
-        this.recordTouches();
+        this.recordTouch();
 
         // If changes took place, send 'em over! ":D
         this.sendState();
     }
 
     public void touchMoved() {
-        this.recordTouches();
+        this.recordTouch();
         this.sendState();
     }
 
     public void touchEnded() {
-        this.recordTouches();
+        this.recordTouch();
         this.sendState();
     }
     // endregion
