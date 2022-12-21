@@ -284,7 +284,7 @@ public class SketchWithScenes extends Sketch {
                 // region Preparing the configuration packet.
                 // TODO: Make a settings file for these little things!
                 Sketch.config.agcVersion = "v1.0.0";
-                Sketch.config.appStartMilliSinceEpoch =
+                Sketch.config.appStartMillisSinceEpoch =
                   System.currentTimeMillis() - MainActivity.sketch.millis();
                 Sketch.config.screenDimensions = new PVector(width, height);
 
@@ -1295,7 +1295,7 @@ public class SketchWithScenes extends Sketch {
         pushStyle();
         popMatrix();
     }
-// endregion
+    // endregion
 
     // region Stuff that helps AGC exit.
     public void quickExitIfCan() {
